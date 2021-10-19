@@ -3,6 +3,9 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import * as dat from "dat.gui";
 
+import vertexShader from "./Assets/Shaders/terrain1/vertex.glsl";
+import fragmentShader from "./Assets/Shaders/terrain1/fragment.glsl";
+
 //Base
 
 //Debug
@@ -15,11 +18,97 @@ const canvas = document.querySelector("canvas.webgl");
 const scene = new THREE.Scene();
 
 //Test
-const boxGeometry = new THREE.BoxBufferGeometry(1, 1, 1);
-const boxMaterial = new THREE.MeshStandardMaterial({ color: 0xffff55 });
-const box = new THREE.Mesh(boxGeometry, boxMaterial);
-scene.add(box);
 
+const debugObject = {
+  depthColor: "#186691",
+  surfaceColor: "#9bd8ff",
+};
+const planetG = new THREE.SphereBufferGeometry(10, 256, 256, 0.5);
+const planetM = new THREE.ShaderMaterial({
+  vertexShader: vertexShader,
+  fragmentShader: fragmentShader,
+  side: THREE.DoubleSide,
+  uniforms: {
+    uTime: { value: 0 },
+    seaSpeed: { value: 1 },
+    uBigWavesElevations: { value: 0.5 },
+    uBigWavesFrequency: { value: new THREE.Vector2(4, 1.5) },
+    uMicroWaveIterations: { value: 0 },
+    uSmallWavesSpeed: { value: 0 },
+    uSmallWavesElevation: { value: 0 },
+    uSmallWavesFrequency: { value: 0 },
+    uDepthColor: { value: new THREE.Color(debugObject.depthColor) },
+    uSurfaceColor: { value: new THREE.Color(debugObject.surfaceColor) },
+  },
+});
+
+const plane = new THREE.Mesh(planetG, planetM);
+plane.rotateX(Math.PI * 0.5);
+scene.add(plane);
+
+gui.add(planetM, "wireframe");
+gui
+  .add(planetM.uniforms.seaSpeed, "value")
+  .min(0)
+  .max(3)
+  .step(0.01)
+  .name("Sea speed");
+gui
+  .add(planetM.uniforms.uBigWavesElevations, "value")
+  .min(0)
+  .max(5)
+  .step(0.01)
+  .name("uBigWavesElevations");
+gui
+  .add(planetM.uniforms.uBigWavesFrequency.value, "x")
+  .min(0)
+  .max(15)
+  .step(0.01)
+  .name("uBigWavesFrequency x");
+gui
+  .add(planetM.uniforms.uBigWavesFrequency.value, "y")
+  .min(0)
+  .max(15)
+  .step(0.01)
+  .name("uBigWavesFrequency y");
+gui
+  .add(planetM.uniforms.uMicroWaveIterations, "value")
+  .min(0)
+  .max(15)
+  .step(0.01)
+  .name("uMicroWavesIterations");
+gui
+  .add(planetM.uniforms.uSmallWavesElevation, "value")
+  .min(0)
+  .max(5)
+  .step(0.01)
+  .name("uSmallWavesElevation");
+gui
+  .add(planetM.uniforms.uSmallWavesFrequency, "value")
+  .min(0)
+  .max(5)
+  .step(0.01)
+  .name("uSmallWavesFrequency");
+gui
+  .add(planetM.uniforms.uSmallWavesSpeed, "value")
+  .min(0)
+  .max(15)
+  .step(0.01)
+  .name("uSmallWavesSpeed");
+
+gui
+  .addColor(debugObject, "depthColor")
+  .name("depth color")
+  .onChange(() => {
+    planetM.uniforms.uDepthColor.value.set(debugObject.depthColor);
+  });
+
+gui
+  .addColor(debugObject, "surfaceColor")
+  .name("surface color")
+  .onChange(() => {
+    planetM.uniforms.uSurfaceColor.value.set(debugObject.surfaceColor);
+  });
 const light = new THREE.AmbientLight(0xffffff, 50);
 light.position.set(5, 5, 5);
 scene.add(light);
@@ -39,7 +128,9 @@ window.addEventListener("resize", () => {
   camera.aspect = sizes.width / sizes.height;
   camera.updateProjectionMatrix();
 
-  //Update renderer
+  // Update renderer
+  renderer.setSize(sizes.width, sizes.height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 });
 
 //Camera
@@ -64,7 +155,13 @@ renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
 //Animate
+const clock = new THREE.Clock();
+
 const tick = () => {
+  const elapsedTime = clock.getElapsedTime();
+
+  planetM.uniforms.uTime.value = elapsedTime;
+
   //Update controls
   controls.update();
 
