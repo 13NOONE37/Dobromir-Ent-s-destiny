@@ -1,10 +1,52 @@
 import "./style.css";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import * as dat from "dat.gui";
 
-import vertexShader from "./Assets/Shaders/terrain1/vertex.glsl";
-import fragmentShader from "./Assets/Shaders/terrain1/fragment.glsl";
+import vertexShader from "/static/Assets/Shaders/terrain1/vertex.glsl";
+import fragmentShader from "/static/Assets/Shaders/terrain1/fragment.glsl";
+
+//Loader
+const loaderManager = new THREE.LoadingManager(
+  () => {
+    console.log("load");
+  },
+  () => {
+    console.log("progress");
+  },
+  () => {
+    console.log("error");
+  }
+);
+const textureLoader = new THREE.TextureLoader(loaderManager);
+const cubeTextureLoader = new THREE.CubeTextureLoader(loaderManager);
+const modelLoader = new GLTFLoader(loaderManager);
+
+//evn texture
+const enviormentMapTexture = cubeTextureLoader.load([
+  "/Assets/Enviorment/px.png",
+  "/Assets/Enviorment/nx.png",
+  "/Assets/Enviorment/py.png",
+  "/Assets/Enviorment/ny.png",
+  "/Assets/Enviorment/pz.png",
+  "/Assets/Enviorment/nz.png",
+]);
+
+//Update all materials
+const updateAllMaterials = () => {
+  scene.traverse((child) => {
+    if (
+      child instanceof THREE.Mesh &&
+      child.material instanceof THREE.MeshStandardMaterial
+    ) {
+      child.material.envMap = enviormentMapTexture;
+      child.material.envMapIntensity = 1.0;
+      child.castShadow = true;
+      child.receiveShadow = true;
+    }
+  });
+};
 
 //Base
 
@@ -16,8 +58,28 @@ const canvas = document.querySelector("canvas.webgl");
 
 //Scene
 const scene = new THREE.Scene();
+scene.environment = enviormentMapTexture;
+// scene.background = enviormentMapTexture;
 
 //Test
+let mixer = null;
+
+modelLoader.load("/Assets/Characters/Czesio/czesio.glb", (model) => {
+  console.log(model);
+  model.scene.children[0].traverse((n) => {
+    if (n.isMesh) {
+      n.castShadow = true;
+      n.receiveShadow = true;
+    }
+    // if (n.material.map) n.material.map.anisotropy = 16;
+  });
+
+  scene.add(model.scene);
+  mixer = new THREE.AnimationMixer(model.scene);
+
+  const action = mixer.clipAction(model.animations[1]);
+  action.play();
+});
 
 const debugObject = {
   depthColor: "#186691",
@@ -42,9 +104,8 @@ const planetM = new THREE.ShaderMaterial({
   },
 });
 
-const plane = new THREE.Mesh(planetG, planetM);
-plane.rotateX(Math.PI * 0.5);
-scene.add(plane);
+const planet = new THREE.Mesh(planetG, planetM);
+// scene.add(planet);
 
 gui.add(planetM, "wireframe");
 gui
@@ -109,9 +170,29 @@ gui
   .onChange(() => {
     planetM.uniforms.uSurfaceColor.value.set(debugObject.surfaceColor);
   });
-const light = new THREE.AmbientLight(0xffffff, 50);
-light.position.set(5, 5, 5);
-scene.add(light);
+
+//Lights
+const hemiLight = new THREE.HemisphereLight(0xffeeb1, 0x080820, 4);
+const hemiHelper = new THREE.HemisphereLightHelper(hemiLight);
+scene.add(hemiLight, hemiHelper);
+
+const spotLight = new THREE.SpotLight(0xffa95c, 4);
+spotLight.castShadow = true;
+spotLight.shadow.bias = -0.0001;
+spotLight.shadow.mapSize.width = 1024 * 4;
+spotLight.shadow.mapSize.height = 1024 * 4;
+
+const spotLightHelper = new THREE.SpotLightHelper(spotLight);
+scene.add(spotLight, spotLightHelper);
+
+//floor
+const floorGeometry = new THREE.PlaneBufferGeometry(100, 100, 256, 256);
+const floorMaterial = new THREE.MeshStandardMaterial();
+
+const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+floor.receiveShadow = true;
+floor.rotateX(-Math.PI * 0.5);
+scene.add(floor);
 
 //Sizes
 const sizes = {
@@ -151,19 +232,36 @@ controls.enableDamping = true;
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
 });
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFShadowMap;
+
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.physicallyCorrectLights = true;
+renderer.outputEncoding = THREE.sRGBEncoding;
+renderer.toneMapping = THREE.ReinhardToneMapping;
+renderer.toneMappingExposure = 2.3;
 
 //Animate
 const clock = new THREE.Clock();
 
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
+  const deltaTime = clock.getDelta();
 
   planetM.uniforms.uTime.value = elapsedTime;
 
+  //update light
+  // spotLight.position.set(
+  //   camera.position.x + 10,
+  //   camera.position.y + 10,
+  //   camera.position.z + 10
+  // );
   //Update controls
   controls.update();
+
+  //Update mixer
+  mixer && mixer.update(deltaTime);
 
   //Render
   renderer.render(scene, camera);
