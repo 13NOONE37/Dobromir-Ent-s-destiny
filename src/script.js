@@ -62,24 +62,6 @@ scene.environment = enviormentMapTexture;
 // scene.background = enviormentMapTexture;
 
 //Test
-let mixer = null;
-
-modelLoader.load("/Assets/Characters/Czesio/czesio.glb", (model) => {
-  console.log(model);
-  model.scene.children[0].traverse((n) => {
-    if (n.isMesh) {
-      n.castShadow = true;
-      n.receiveShadow = true;
-    }
-    // if (n.material.map) n.material.map.anisotropy = 16;
-  });
-
-  scene.add(model.scene);
-  mixer = new THREE.AnimationMixer(model.scene);
-
-  const action = mixer.clipAction(model.animations[1]);
-  action.play();
-});
 
 const debugObject = {
   depthColor: "#186691",
@@ -172,44 +154,87 @@ gui
   });
 
 //Lights
-const hemiLight = new THREE.HemisphereLight(0xffeeb1, 0x080820, 4);
+const hemiLight = new THREE.HemisphereLight(0xffeeb1, 0x080820, 1);
 hemiLight.position.y = 155.0;
 const hemiHelper = new THREE.HemisphereLightHelper(hemiLight);
 scene.add(hemiLight, hemiHelper);
 
-const spotLight = new THREE.SpotLight(0xffa95c, 4);
+const spotLight = new THREE.SpotLight(0xffffff, 50, 100, Math.PI * 0.3);
 spotLight.castShadow = true;
 spotLight.shadow.bias = -0.0001;
-spotLight.shadow.far = 5.0;
-spotLight.shadow.mapSize.width = 1024 * 4;
-spotLight.shadow.mapSize.height = 1024 * 4;
+spotLight.shadow.mapSize.width = 1024 * 2;
+spotLight.shadow.mapSize.height = 1024 * 2;
+spotLight.shadow.camera.fov = 30;
+spotLight.shadow.camera.near = 1;
+spotLight.shadow.camera.far = 100;
+
+gui.add(spotLight, "intensity").min(50).max(500).name("intensity");
 gui.add(spotLight.position, "x").name("x spotlight postition").min(0).max(50);
 gui.add(spotLight.position, "y").name("y spotlight postition").min(0).max(50);
 gui.add(spotLight.position, "z").name("z spotlight postition").min(0).max(50);
 
-const spotLightHelper = new THREE.SpotLightHelper(spotLight);
-scene.add(spotLight, spotLightHelper);
+scene.add(spotLight, spotLight.target);
 
 //floor
 const floorHeightTexture = textureLoader.load(
-  "Assets/Enviorment/Thumbnails/Terrain_Alpha (4).jpg"
+  "Assets/Enviorment/Thumbnails/Terrain_Alpha (1).jpg"
 );
 
+const floorAmbientOcclusionTexture = textureLoader.load(
+  "Assets/Enviorment/rock/ambientOcclusion.jpg"
+);
+const floorNormalTexture = textureLoader.load(
+  "Assets/Enviorment/rock/normal.jpg"
+);
 const floorColorTexture = textureLoader.load(
-  "Assets/Enviorment/lava/Lava_006_basecolor.jpg"
+  "Assets/Enviorment/rock/color.jpg"
+);
+const floorRoughnessTexture = textureLoader.load(
+  "Assets/Enviorment/rock/roughness.jpg"
 );
 
-const floorGeometry = new THREE.PlaneBufferGeometry(500, 500, 512, 512);
+const floorGeometry = new THREE.PlaneBufferGeometry(100, 100, 256, 256);
 const floorMaterial = new THREE.MeshStandardMaterial({
+  aoMap: floorAmbientOcclusionTexture,
   map: floorColorTexture,
+  normalMap: floorNormalTexture,
+  roughnessMap: floorRoughnessTexture,
   displacementMap: floorHeightTexture,
-  displacementScale: 150,
+  displacementScale: 20,
 });
 
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+//potrzebujemy skopiować koordynaty UV aby zadziałała teksture ambientColor
+floor.geometry.setAttribute(
+  "uv2",
+  new THREE.BufferAttribute(floor.geometry.attributes.uv.array, 2)
+);
+
 floor.receiveShadow = true;
 floor.rotateX(-Math.PI * 0.5);
 scene.add(floor);
+
+let mixer = null;
+
+let czesio = null;
+modelLoader.load("/Assets/Characters/Czesio/czesio.glb", (model) => {
+  czesio = model.scene;
+
+  czesio.children[0].traverse((n) => {
+    if (n.isMesh) {
+      n.castShadow = true;
+      n.receiveShadow = true;
+    }
+    // if (n.material.map) n.material.map.anisotropy = 16;
+  });
+
+  scene.add(czesio);
+  spotLight.lookAt(czesio);
+  mixer = new THREE.AnimationMixer(czesio);
+
+  const action = mixer.clipAction(czesio.animations[1]);
+  action.play();
+});
 
 //Sizes
 const sizes = {
@@ -255,6 +280,7 @@ renderer.shadowMap.type = THREE.PCFShadowMap;
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.physicallyCorrectLights = true;
+
 renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ReinhardToneMapping;
 renderer.toneMappingExposure = 2.3;
