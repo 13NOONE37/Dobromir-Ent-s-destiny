@@ -173,21 +173,38 @@ gui
 
 //Lights
 const hemiLight = new THREE.HemisphereLight(0xffeeb1, 0x080820, 4);
+hemiLight.position.y = 155.0;
 const hemiHelper = new THREE.HemisphereLightHelper(hemiLight);
 scene.add(hemiLight, hemiHelper);
 
 const spotLight = new THREE.SpotLight(0xffa95c, 4);
 spotLight.castShadow = true;
 spotLight.shadow.bias = -0.0001;
+spotLight.shadow.far = 5.0;
 spotLight.shadow.mapSize.width = 1024 * 4;
 spotLight.shadow.mapSize.height = 1024 * 4;
+gui.add(spotLight.position, "x").name("x spotlight postition").min(0).max(50);
+gui.add(spotLight.position, "y").name("y spotlight postition").min(0).max(50);
+gui.add(spotLight.position, "z").name("z spotlight postition").min(0).max(50);
 
 const spotLightHelper = new THREE.SpotLightHelper(spotLight);
 scene.add(spotLight, spotLightHelper);
 
 //floor
-const floorGeometry = new THREE.PlaneBufferGeometry(100, 100, 256, 256);
-const floorMaterial = new THREE.MeshStandardMaterial();
+const floorHeightTexture = textureLoader.load(
+  "Assets/Enviorment/Thumbnails/Terrain_Alpha (4).jpg"
+);
+
+const floorColorTexture = textureLoader.load(
+  "Assets/Enviorment/lava/Lava_006_basecolor.jpg"
+);
+
+const floorGeometry = new THREE.PlaneBufferGeometry(500, 500, 512, 512);
+const floorMaterial = new THREE.MeshStandardMaterial({
+  map: floorColorTexture,
+  displacementMap: floorHeightTexture,
+  displacementScale: 150,
+});
 
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
 floor.receiveShadow = true;
