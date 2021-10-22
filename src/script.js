@@ -154,30 +154,54 @@ gui
   });
 
 //Lights
-const hemiLight = new THREE.HemisphereLight(0xffeeb1, 0x080820, 1);
-hemiLight.position.y = 155.0;
-const hemiHelper = new THREE.HemisphereLightHelper(hemiLight);
-scene.add(hemiLight, hemiHelper);
+const LightDebugObject = {
+  color: 0xffffff,
+};
+const directionalLight = new THREE.DirectionalLight(
+  new THREE.Color(LightDebugObject.color),
+  4.5
+);
+directionalLight.castShadow = true;
+directionalLight.shadow.mapSize.width = 1024 * 2;
+directionalLight.shadow.mapSize.height = 1024 * 2;
+directionalLight.shadow.camera.far = 300;
+directionalLight.shadow.camera.near = 0.001;
 
-const spotLight = new THREE.SpotLight(0xffffff, 50, 100, Math.PI * 0.3);
-spotLight.castShadow = true;
-spotLight.shadow.bias = -0.0001;
-spotLight.shadow.mapSize.width = 1024 * 2;
-spotLight.shadow.mapSize.height = 1024 * 2;
-spotLight.shadow.camera.fov = 30;
-spotLight.shadow.camera.near = 1;
-spotLight.shadow.camera.far = 100;
+directionalLight.shadow.camera.left = Math.PI * 12;
+directionalLight.shadow.camera.top = Math.PI * 12;
+directionalLight.shadow.camera.right = -Math.PI * 12;
+directionalLight.shadow.camera.bottom = -Math.PI * 12;
+directionalLight.shadow.bias = -0.001;
 
-gui.add(spotLight, "intensity").min(50).max(500).name("intensity");
-gui.add(spotLight.position, "x").name("x spotlight postition").min(0).max(50);
-gui.add(spotLight.position, "y").name("y spotlight postition").min(0).max(50);
-gui.add(spotLight.position, "z").name("z spotlight postition").min(0).max(50);
+directionalLight.position.set(50, 50, 50);
+directionalLight.target.position.set(0, 0, 0);
+scene.add(
+  directionalLight,
+  directionalLight.target,
+  new THREE.DirectionalLightHelper(directionalLight),
+  new THREE.CameraHelper(directionalLight.shadow.camera)
+);
 
-scene.add(spotLight, spotLight.target);
+gui
+  .add(directionalLight, "intensity")
+  .name("Light Intensity")
+  .step(1)
+  .min(0)
+  .max(250);
+gui
+  .addColor(LightDebugObject, "color")
+  .name("Light Color")
+  .onFinishChange((value) => {
+    LightDebugObject.color = value;
+    directionalLight.color = new THREE.Color(value);
+  });
+gui.add(directionalLight.position, "x").name("Light x").step(1).min(10).max(50);
+gui.add(directionalLight.position, "y").name("Light y").step(1).min(10).max(50);
+gui.add(directionalLight.position, "z").name("Light z").step(1).min(10).max(50);
 
 //floor
 const floorHeightTexture = textureLoader.load(
-  "Assets/Enviorment/Thumbnails/Terrain_Alpha (1).jpg"
+  "Assets/Enviorment/Thumbnails/Terrain_Alpha (6).jpg"
 );
 
 const floorAmbientOcclusionTexture = textureLoader.load(
@@ -187,20 +211,22 @@ const floorNormalTexture = textureLoader.load(
   "Assets/Enviorment/rock/normal.jpg"
 );
 const floorColorTexture = textureLoader.load(
-  "Assets/Enviorment/rock/color.jpg"
+  "Assets/Enviorment/rock/basecolor.jpg"
 );
 const floorRoughnessTexture = textureLoader.load(
   "Assets/Enviorment/rock/roughness.jpg"
 );
 
-const floorGeometry = new THREE.PlaneBufferGeometry(100, 100, 256, 256);
+const floorGeometry = new THREE.PlaneBufferGeometry(100, 100, 616, 616);
+floorGeometry.computeVertexNormals();
+floorGeometry.receiveShadow = true;
 const floorMaterial = new THREE.MeshStandardMaterial({
   aoMap: floorAmbientOcclusionTexture,
   map: floorColorTexture,
   normalMap: floorNormalTexture,
   roughnessMap: floorRoughnessTexture,
   displacementMap: floorHeightTexture,
-  displacementScale: 20,
+  displacementScale: 25,
 });
 
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
@@ -211,6 +237,7 @@ floor.geometry.setAttribute(
 );
 
 floor.receiveShadow = true;
+floor.castShadow = true;
 floor.rotateX(-Math.PI * 0.5);
 scene.add(floor);
 
@@ -229,7 +256,7 @@ modelLoader.load("/Assets/Characters/Czesio/czesio.glb", (model) => {
   });
 
   scene.add(czesio);
-  spotLight.lookAt(czesio);
+  // spotLight.lookAt(czesio);
   mixer = new THREE.AnimationMixer(czesio);
 
   const action = mixer.clipAction(czesio.animations[1]);
