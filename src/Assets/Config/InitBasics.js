@@ -1,6 +1,10 @@
 import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import * as dat from "dat.gui";
 
 const initBasics = () => {
+  const gui = new dat.GUI();
+
   const canvas = document.querySelector("canvas.webgl");
 
   const sizes = {
@@ -20,6 +24,9 @@ const initBasics = () => {
     renderer.setSize(sizes.width, sizes.height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   });
+
+  //Scene
+  const scene = new THREE.Scene();
 
   //Renderer
   const renderer = new THREE.WebGLRenderer({
@@ -47,4 +54,7 @@ const initBasics = () => {
   //Controls
   const controls = new OrbitControls(camera, canvas);
   controls.enableDamping = true;
+
+  return [renderer, camera, controls, scene, gui];
 };
+export default initBasics;
