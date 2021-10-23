@@ -63,6 +63,124 @@ scene.environment = enviormentMapTexture;
 
 //Test
 
+//Lights
+const LightDebugObject = {
+  color: 0xfff3bf,
+  d: 100,
+};
+const directionalLight = new THREE.DirectionalLight(
+  new THREE.Color(LightDebugObject.color),
+  4.5
+);
+directionalLight.castShadow = true;
+directionalLight.shadow.mapSize.width = 1024 * 4;
+directionalLight.shadow.mapSize.height = 1024 * 4;
+directionalLight.shadow.camera.far = 300;
+directionalLight.shadow.camera.near = 0.001;
+
+directionalLight.shadow.camera.left = LightDebugObject.d;
+directionalLight.shadow.camera.top = LightDebugObject.d;
+directionalLight.shadow.camera.right = -LightDebugObject.d;
+directionalLight.shadow.camera.bottom = -LightDebugObject.d;
+directionalLight.shadow.bias = -0.001;
+
+directionalLight.position.set(50, 50, 50);
+directionalLight.target.position.set(0, 0, 0);
+scene.add(
+  directionalLight,
+  directionalLight.target,
+  new THREE.DirectionalLightHelper(directionalLight),
+  new THREE.CameraHelper(directionalLight.shadow.camera)
+);
+
+gui
+  .add(directionalLight, "intensity")
+  .name("Light Intensity")
+  .step(0.1)
+  .min(0)
+  .max(20);
+gui
+  .addColor(LightDebugObject, "color")
+  .name("Light Color")
+  .onFinishChange((value) => {
+    LightDebugObject.color = value;
+    directionalLight.color = new THREE.Color(value);
+  });
+gui.add(directionalLight.position, "x").name("Light x").step(1).min(10).max(50);
+gui.add(directionalLight.position, "y").name("Light y").step(1).min(10).max(50);
+gui.add(directionalLight.position, "z").name("Light z").step(1).min(10).max(50);
+
+//floor
+const floorHeightTexture = textureLoader.load(
+  "Assets/Enviorment/Thumbnails/Terrain_Alpha (6).jpg"
+);
+
+const floorDisplacmentTexture = textureLoader.load(
+  "Assets/Enviorment/rock/height.png"
+);
+const floorAmbientOcclusionTexture = textureLoader.load(
+  "Assets/Enviorment/rock/ambientOcclusion.jpg"
+);
+const floorNormalTexture = textureLoader.load(
+  "Assets/Enviorment/rock/normal.jpg"
+);
+const floorColorTexture = textureLoader.load(
+  "Assets/Enviorment/rock/basecolor.jpg"
+);
+const floorRoughnessTexture = textureLoader.load(
+  "Assets/Enviorment/rock/roughness.jpg"
+);
+
+const floorGeometry = new THREE.PlaneBufferGeometry(100, 100, 128, 128);
+floorGeometry.computeVertexNormals();
+floorGeometry.receiveShadow = true;
+const floorMaterial = new THREE.MeshStandardMaterial({
+  aoMap: floorAmbientOcclusionTexture,
+  map: floorColorTexture,
+  normalMap: floorNormalTexture,
+  roughnessMap: floorRoughnessTexture,
+  displacementMap: floorDisplacmentTexture,
+  displacementScale: 0,
+});
+
+const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+//potrzebujemy skopiować koordynaty UV aby zadziałała teksture ambientColor
+floor.geometry.setAttribute(
+  "uv2",
+  new THREE.BufferAttribute(floor.geometry.attributes.uv.array, 2)
+);
+
+floor.receiveShadow = true;
+floor.castShadow = true;
+
+floor.rotateX(-Math.PI * 0.5);
+scene.add(floor);
+
+let mixer = null;
+
+let czesio = null;
+modelLoader.load("/Assets/Characters/Czesio/czesio.glb", (model) => {
+  czesio = model.scene;
+  czesio.children[0].traverse((n) => {
+    if (n.isMesh) {
+      n.castShadow = true;
+      n.receiveShadow = true;
+    }
+    // if (n.material.map) n.material.map.anisotropy = 16;
+  });
+
+  scene.add(czesio);
+  // spotLight.lookAt(czesio);
+  mixer = new THREE.AnimationMixer(czesio);
+
+  const action = mixer.clipAction(czesio.animations[1]);
+  action.play();
+  console.log(model.scene);
+
+  gui.add(czesio.position, "x").name("czesio x").min(-50).max(50).step(1);
+  gui.add(czesio.position, "z").name("czesio z").min(-50).max(50).step(1);
+});
+
 const debugObject = {
   depthColor: "#186691",
   surfaceColor: "#9bd8ff",
@@ -87,7 +205,8 @@ const planetM = new THREE.ShaderMaterial({
 });
 
 const planet = new THREE.Mesh(planetG, planetM);
-// scene.add(planet);
+planet.position.copy(directionalLight.position);
+scene.add(planet);
 
 gui.add(planetM, "wireframe");
 gui
@@ -153,116 +272,6 @@ gui
     planetM.uniforms.uSurfaceColor.value.set(debugObject.surfaceColor);
   });
 
-//Lights
-const LightDebugObject = {
-  color: 0xffffff,
-};
-const directionalLight = new THREE.DirectionalLight(
-  new THREE.Color(LightDebugObject.color),
-  4.5
-);
-directionalLight.castShadow = true;
-directionalLight.shadow.mapSize.width = 1024 * 2;
-directionalLight.shadow.mapSize.height = 1024 * 2;
-directionalLight.shadow.camera.far = 300;
-directionalLight.shadow.camera.near = 0.001;
-
-directionalLight.shadow.camera.left = Math.PI * 12;
-directionalLight.shadow.camera.top = Math.PI * 12;
-directionalLight.shadow.camera.right = -Math.PI * 12;
-directionalLight.shadow.camera.bottom = -Math.PI * 12;
-directionalLight.shadow.bias = -0.001;
-
-directionalLight.position.set(50, 50, 50);
-directionalLight.target.position.set(0, 0, 0);
-scene.add(
-  directionalLight,
-  directionalLight.target,
-  new THREE.DirectionalLightHelper(directionalLight),
-  new THREE.CameraHelper(directionalLight.shadow.camera)
-);
-
-gui
-  .add(directionalLight, "intensity")
-  .name("Light Intensity")
-  .step(1)
-  .min(0)
-  .max(250);
-gui
-  .addColor(LightDebugObject, "color")
-  .name("Light Color")
-  .onFinishChange((value) => {
-    LightDebugObject.color = value;
-    directionalLight.color = new THREE.Color(value);
-  });
-gui.add(directionalLight.position, "x").name("Light x").step(1).min(10).max(50);
-gui.add(directionalLight.position, "y").name("Light y").step(1).min(10).max(50);
-gui.add(directionalLight.position, "z").name("Light z").step(1).min(10).max(50);
-
-//floor
-const floorHeightTexture = textureLoader.load(
-  "Assets/Enviorment/Thumbnails/Terrain_Alpha (6).jpg"
-);
-
-const floorAmbientOcclusionTexture = textureLoader.load(
-  "Assets/Enviorment/rock/ambientOcclusion.jpg"
-);
-const floorNormalTexture = textureLoader.load(
-  "Assets/Enviorment/rock/normal.jpg"
-);
-const floorColorTexture = textureLoader.load(
-  "Assets/Enviorment/rock/basecolor.jpg"
-);
-const floorRoughnessTexture = textureLoader.load(
-  "Assets/Enviorment/rock/roughness.jpg"
-);
-
-const floorGeometry = new THREE.PlaneBufferGeometry(100, 100, 616, 616);
-floorGeometry.computeVertexNormals();
-floorGeometry.receiveShadow = true;
-const floorMaterial = new THREE.MeshStandardMaterial({
-  aoMap: floorAmbientOcclusionTexture,
-  map: floorColorTexture,
-  normalMap: floorNormalTexture,
-  roughnessMap: floorRoughnessTexture,
-  displacementMap: floorHeightTexture,
-  displacementScale: 25,
-});
-
-const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-//potrzebujemy skopiować koordynaty UV aby zadziałała teksture ambientColor
-floor.geometry.setAttribute(
-  "uv2",
-  new THREE.BufferAttribute(floor.geometry.attributes.uv.array, 2)
-);
-
-floor.receiveShadow = true;
-floor.castShadow = true;
-floor.rotateX(-Math.PI * 0.5);
-scene.add(floor);
-
-let mixer = null;
-
-let czesio = null;
-modelLoader.load("/Assets/Characters/Czesio/czesio.glb", (model) => {
-  czesio = model.scene;
-
-  czesio.children[0].traverse((n) => {
-    if (n.isMesh) {
-      n.castShadow = true;
-      n.receiveShadow = true;
-    }
-    // if (n.material.map) n.material.map.anisotropy = 16;
-  });
-
-  scene.add(czesio);
-  // spotLight.lookAt(czesio);
-  mixer = new THREE.AnimationMixer(czesio);
-
-  const action = mixer.clipAction(czesio.animations[1]);
-  action.play();
-});
-
 //Sizes
 const sizes = {
   width: window.innerWidth,
@@ -301,13 +310,13 @@ controls.enableDamping = true;
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
 });
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFShadowMap;
 
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.physicallyCorrectLights = true;
 
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFShadowMap;
+renderer.physicallyCorrectLights = true;
 renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping = THREE.ReinhardToneMapping;
 renderer.toneMappingExposure = 2.3;
