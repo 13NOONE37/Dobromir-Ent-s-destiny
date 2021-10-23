@@ -80,6 +80,9 @@ const initSunLight = (scene, gui) => {
   const sun = new THREE.Mesh(sunG, sunM);
   sun.position.copy(directionalLight.position);
   scene.add(sun);
+
+  const ambientLight = new THREE.AmbientLight(LightDebugObject.surfaceColor, 1);
+  scene.add(ambientLight);
 };
 
 export default initSunLight;

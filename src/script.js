@@ -18,12 +18,11 @@ const enviormentMapTexture = cubeTextureLoader.load([
   "/Assets/Enviorment/nz.png",
 ]);
 
-//Debug
-
+//Init basics
 const [renderer, camera, controls, scene, gui] = initBasics();
-
 scene.environment = enviormentMapTexture;
 
+//Init lights
 initSunLight(scene, gui);
 
 //Test
@@ -69,7 +68,7 @@ floorRoughnessTexture.wrapS = THREE.RepeatWrapping;
 floorRoughnessTexture.wrapT = THREE.RepeatWrapping;
 
 const floorGeometry = new THREE.PlaneBufferGeometry(1500, 1500, 512, 512);
-const floorMaterial = new THREE.MeshStandardMaterial({
+const floorMaterial = new THREE.MeshToonMaterial({
   aoMap: floorAmbientOcclusionTexture,
   map: floorColorTexture,
   normalMap: floorNormalTexture,
@@ -106,21 +105,26 @@ modelLoader.load("/Assets/Characters/Czesio/czesio.glb", (model) => {
   });
   scene.add(czesio);
 
-  // mixer = new THREE.AnimationMixer(czesio);
-
-  // const action = mixer.clipAction(czesio.animations[1]);
-  // action.play();
+  mixer = new THREE.AnimationMixer(czesio);
+  // mixer.timeScale = 2.0;
+  console.log(model);
+  const action = mixer.clipAction(model.animations[4]);
+  console.log(action);
+  action.play();
 
   gui.add(czesio.position, "x").name("czesio x").min(-50).max(50).step(1);
   gui.add(czesio.position, "z").name("czesio z").min(-50).max(50).step(1);
+  gui.add(czesio.position, "y").name("czesio y").min(-50).max(50).step(1);
 });
 
 //Animate
 const clock = new THREE.Clock();
+let timeCurrent = 0;
 
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
-  const deltaTime = clock.getDelta();
+  const deltaTime = elapsedTime - timeCurrent;
+  timeCurrent = elapsedTime;
 
   //Update controls
   controls.update();
