@@ -116,7 +116,6 @@ modelLoader.load("/Assets/Characters/Czesio/czesio.glb", (model) => {
   gui.add(czesio.position, "z").name("czesio z").min(-50).max(50).step(1);
   gui.add(czesio.position, "y").name("czesio y").min(-50).max(50).step(1);
 });
-
 //Animate
 const clock = new THREE.Clock();
 let timeCurrent = 0;

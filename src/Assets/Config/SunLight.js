@@ -46,8 +46,14 @@ const initSunLight = (scene, gui) => {
     .onFinishChange((value) => {
       LightDebugObject.surfaceColor = value;
       directionalLight.color = new THREE.Color(value);
+      sunM.uniforms.uSurfaceColor = { value: new THREE.Color(value) };
     });
-  gui.addColor(LightDebugObject, "depthColor").name("Light DepthColor");
+  gui
+    .addColor(LightDebugObject, "depthColor")
+    .name("Light DepthColor")
+    .onFinishChange((value) => {
+      sunM.uniforms.uDepthColor = { value: new THREE.Color(value) };
+    });
   gui
     .add(directionalLight.position, "x")
     .name("Light x")
@@ -72,8 +78,8 @@ const initSunLight = (scene, gui) => {
     vertexShader: vertexShader,
     fragmentShader: fragmentShader,
     uniforms: {
-      uSurfaceColor: new THREE.Color(LightDebugObject.surfaceColor),
-      uDepthColor: new THREE.Color(LightDebugObject.depthColor),
+      uSurfaceColor: { value: new THREE.Color(LightDebugObject.surfaceColor) },
+      uDepthColor: { value: new THREE.Color(LightDebugObject.depthColor) },
     },
   });
 
