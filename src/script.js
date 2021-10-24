@@ -24,7 +24,7 @@ const [renderer, camera, controls, scene, gui, composer] = initBasics();
 scene.environment = enviormentMapTexture;
 
 //Init lights
-initSunLight(scene, gui, camera);
+initSunLight(scene, gui);
 
 //Test
 
@@ -88,6 +88,7 @@ floor.receiveShadow = true;
 floor.castShadow = true;
 
 floor.rotateX(-Math.PI * 0.5);
+floor.layers.set(0);
 scene.add(floor);
 
 let mixer = null;
@@ -115,6 +116,7 @@ modelLoader.load("/Assets/Characters/czesio2.glb", (model) => {
   gui.add(czesio.position, "x").name("czesio x").min(-50).max(50).step(1);
   gui.add(czesio.position, "z").name("czesio z").min(-50).max(50).step(1);
   gui.add(czesio.position, "y").name("czesio y").min(-50).max(50).step(1);
+  czesio.layers.set(0);
 });
 
 //Animate
@@ -138,7 +140,15 @@ const tick = () => {
 
   //Render
   // renderer.render(scene, camera);
+  // composer.render();
+  renderer.clear();
+
+  camera.layers.set(1);
   composer.render();
+
+  renderer.clearDepth();
+  camera.layers.set(0);
+  renderer.render(scene, camera);
 
   stats.end();
   //Call tick again on next frame

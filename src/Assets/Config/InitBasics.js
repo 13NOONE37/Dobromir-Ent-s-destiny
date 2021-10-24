@@ -24,6 +24,7 @@ const initBasics = () => {
     //Update camera
     camera.aspect = sizes.width / sizes.height;
     camera.updateProjectionMatrix();
+    camera.layers.enable(1);
 
     // Update renderer
     renderer.setSize(sizes.width, sizes.height);
@@ -47,7 +48,7 @@ const initBasics = () => {
   renderer.physicallyCorrectLights = true;
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.toneMapping = THREE.ReinhardToneMapping;
-  renderer.toneMappingExposure = 2.3;
+  renderer.autoClear = false;
 
   //Camera
   const camera = new THREE.PerspectiveCamera(
@@ -61,13 +62,14 @@ const initBasics = () => {
 
   //Controls
   const controls = new OrbitControls(camera, canvas);
+
   controls.enableDamping = true;
 
   //Postprocesing
   let composer;
   //bloom
   const params = {
-    exposure: 1,
+    exposure: 1.2,
     bloomStrength: 3,
     bloomThreshold: 0.9,
     bloomRadius: 1,
@@ -109,7 +111,7 @@ const initBasics = () => {
   composer.setPixelRatio(Math.min(2, window.devicePixelRatio));
 
   composer.addPass(renderScene);
-  // composer.addPass(bloomPass);
+  composer.addPass(bloomPass);
 
   return [renderer, camera, controls, scene, gui, composer];
 };

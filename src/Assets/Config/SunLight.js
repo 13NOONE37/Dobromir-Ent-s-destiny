@@ -3,7 +3,7 @@ import * as THREE from "three";
 import vertexShader from "/static/Assets/Shaders/Sun/vertex.glsl";
 import fragmentShader from "/static/Assets/Shaders/Sun/fragment.glsl";
 
-const initSunLight = (scene, gui, camera) => {
+const initSunLight = (scene, gui) => {
   const LightDebugObject = {
     surfaceColor: 0xfff3bf,
     depthColor: 0xfff3bf,
@@ -29,9 +29,9 @@ const initSunLight = (scene, gui, camera) => {
   directionalLight.target.position.set(0, 0, 0);
   scene.add(
     directionalLight,
-    directionalLight.target,
-    new THREE.DirectionalLightHelper(directionalLight),
-    new THREE.CameraHelper(directionalLight.shadow.camera)
+    directionalLight.target
+    // new THREE.DirectionalLightHelper(directionalLight)
+    // new THREE.CameraHelper(directionalLight.shadow.camera)
   );
 
   gui
@@ -84,7 +84,9 @@ const initSunLight = (scene, gui, camera) => {
   });
 
   const sun = new THREE.Mesh(sunG, sunM);
+  sun.layers.set(1);
   sun.position.copy(directionalLight.position);
+
   scene.add(sun);
 
   const ambientLight = new THREE.AmbientLight(LightDebugObject.surfaceColor, 1);
