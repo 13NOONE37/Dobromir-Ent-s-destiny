@@ -1,5 +1,6 @@
 import "./style.css";
 import * as THREE from "three";
+import Stats from "stats.js";
 
 import initSunLight from "./Assets/Config/SunLight";
 import initLoadingManagers from "./Assets/Config/LoadingManagers";
@@ -19,11 +20,11 @@ const enviormentMapTexture = cubeTextureLoader.load([
 ]);
 
 //Init basics
-const [renderer, camera, controls, scene, gui] = initBasics();
+const [renderer, camera, controls, scene, gui, composer] = initBasics();
 scene.environment = enviormentMapTexture;
 
 //Init lights
-initSunLight(scene, gui);
+initSunLight(scene, gui, camera);
 
 //Test
 
@@ -90,9 +91,8 @@ floor.rotateX(-Math.PI * 0.5);
 scene.add(floor);
 
 let mixer = null;
-
 let czesio = null;
-modelLoader.load("/Assets/Characters/Czesio/czesio.glb", (model) => {
+modelLoader.load("/Assets/Characters/czesio2.glb", (model) => {
   model.scene.scale.set(10, 10, 10);
   czesio = model.scene;
 
@@ -108,7 +108,7 @@ modelLoader.load("/Assets/Characters/Czesio/czesio.glb", (model) => {
   mixer = new THREE.AnimationMixer(czesio);
   // mixer.timeScale = 2.0;
   console.log(model);
-  const action = mixer.clipAction(model.animations[4]);
+  const action = mixer.clipAction(model.animations[1]);
   console.log(action);
   action.play();
 
@@ -116,24 +116,31 @@ modelLoader.load("/Assets/Characters/Czesio/czesio.glb", (model) => {
   gui.add(czesio.position, "z").name("czesio z").min(-50).max(50).step(1);
   gui.add(czesio.position, "y").name("czesio y").min(-50).max(50).step(1);
 });
+
 //Animate
+let stats = new Stats();
+stats.showPanel(0);
+document.body.appendChild(stats.dom);
+
 const clock = new THREE.Clock();
 let timeCurrent = 0;
 
 const tick = () => {
+  stats.begin();
   const elapsedTime = clock.getElapsedTime();
   const deltaTime = elapsedTime - timeCurrent;
   timeCurrent = elapsedTime;
 
   //Update controls
   controls.update();
-
   //Update mixer
   mixer && mixer.update(deltaTime);
 
   //Render
-  renderer.render(scene, camera);
+  // renderer.render(scene, camera);
+  composer.render();
 
+  stats.end();
   //Call tick again on next frame
   window.requestAnimationFrame(tick);
 };

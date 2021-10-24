@@ -2,7 +2,12 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import * as dat from "dat.gui";
 
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
+import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
+
 const initBasics = () => {
+  //Basic
   const gui = new dat.GUI();
 
   const canvas = document.querySelector("canvas.webgl");
@@ -23,6 +28,9 @@ const initBasics = () => {
     // Update renderer
     renderer.setSize(sizes.width, sizes.height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    //Update postprocesing
+    composer.setSize(sizes.width, sizes.height);
   });
 
   //Scene
@@ -55,6 +63,54 @@ const initBasics = () => {
   const controls = new OrbitControls(camera, canvas);
   controls.enableDamping = true;
 
-  return [renderer, camera, controls, scene, gui];
+  //Postprocesing
+  let composer;
+  //bloom
+  const params = {
+    exposure: 1,
+    bloomStrength: 3,
+    bloomThreshold: 0.9,
+    bloomRadius: 1,
+  };
+  const renderScene = new RenderPass(scene, camera);
+
+  const bloomPass = new UnrealBloomPass(
+    new THREE.Vector2(sizes.width, sizes.height),
+    0.5,
+    0,
+    0
+  );
+  bloomPass.threshold = params.bloomThreshold;
+  bloomPass.strength = params.bloomStrength;
+  bloomPass.radius = params.bloomRadius;
+
+  gui.add(params, "exposure", 0.1, 2).onChange(function (value) {
+    renderer.toneMappingExposure = Math.pow(value, 4.0);
+  });
+
+  gui.add(params, "bloomThreshold", 0.0, 1.0).onChange(function (value) {
+    bloomPass.threshold = Number(value);
+  });
+
+  gui.add(params, "bloomStrength", 0.0, 3.0).onChange(function (value) {
+    bloomPass.strength = Number(value);
+  });
+
+  gui
+    .add(params, "bloomRadius", 0.0, 1.0)
+    .step(0.01)
+    .onChange(function (value) {
+      bloomPass.radius = Number(value);
+    });
+
+  //Finish
+  composer = new EffectComposer(renderer);
+  composer.setSize(sizes.width, sizes.height);
+  composer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+
+  composer.addPass(renderScene);
+  // composer.addPass(bloomPass);
+
+  return [renderer, camera, controls, scene, gui, composer];
 };
 export default initBasics;

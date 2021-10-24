@@ -3,7 +3,7 @@ import * as THREE from "three";
 import vertexShader from "/static/Assets/Shaders/Sun/vertex.glsl";
 import fragmentShader from "/static/Assets/Shaders/Sun/fragment.glsl";
 
-const initSunLight = (scene, gui) => {
+const initSunLight = (scene, gui, camera) => {
   const LightDebugObject = {
     surfaceColor: 0xfff3bf,
     depthColor: 0xfff3bf,
@@ -73,7 +73,7 @@ const initSunLight = (scene, gui) => {
     .min(10)
     .max(50);
 
-  const sunG = new THREE.SphereBufferGeometry(100, 24, 24, 0.5);
+  const sunG = new THREE.SphereBufferGeometry(100, 16, 16, 0.5);
   const sunM = new THREE.ShaderMaterial({
     vertexShader: vertexShader,
     fragmentShader: fragmentShader,

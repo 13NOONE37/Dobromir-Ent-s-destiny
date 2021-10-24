@@ -1,8 +1,14 @@
 uniform vec3 uSurfaceColor;
 uniform vec3 uDepthColor;
+varying vec2 vUv;
 
 void main() {
-    float colorStrength =  (2.0 * 1.0) + 1.5;
-    vec3 color = mix(uDepthColor, uSurfaceColor, colorStrength);
-    gl_FragColor = vec4(color, 1.0);
+    float strength = 1.0 - distance(vUv, vec2(0.5)) * 10.0;
+
+    gl_FragColor = vec4(strength, strength, strength, 1.0);
 }
+// varying float intensity;
+// void main() {
+//   vec3 glow = vec3(0, 1,1) * intensity;
+//   gl_FragColor = vec4( glow, 1.0 );
+// }
