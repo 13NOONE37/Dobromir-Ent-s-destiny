@@ -5,6 +5,7 @@ import * as dat from "dat.gui";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
+import { SMAAPass } from "three/examples/jsm/postprocessing/SMAAPass.js";
 
 const initBasics = () => {
   //Basic
@@ -31,7 +32,7 @@ const initBasics = () => {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
     //Update postprocesing
-    composer.setSize(sizes.width, sizes.height);
+    bloomComposer.setSize(sizes.width, sizes.height);
   });
 
   //Scene
@@ -66,7 +67,23 @@ const initBasics = () => {
   controls.enableDamping = true;
 
   //Postprocesing
-  let composer;
+  let RenderTargetClass = null;
+
+  if (renderer.getPixelRatio() === 1 && renderer.capabilities.isWebGL2) {
+    RenderTargetClass = THREE.WebGLMultisampleRenderTarget;
+    //Jeśli pixelratio jest równy jeden i obsługiwany jest webgl2.0 używamy MSAA
+  } else {
+    RenderTargetClass = THREE.WebGLRenderTarget;
+    //jeśli pixelratio jest powyżej 1 nie używamy antyaliasu bo zadziała domyślny
+  }
+  const renderTarget = new RenderTargetClass(800, 600, {
+    minFilter: THREE.LinearFilter,
+    magFilter: THREE.LinearFilter,
+    format: THREE.RGBAFormat,
+    encoding: THREE.sRGBEncoding,
+  });
+
+  let bloomComposer;
   //bloom
   const params = {
     exposure: 1.2,
@@ -75,6 +92,7 @@ const initBasics = () => {
     bloomRadius: 1,
   };
   const renderScene = new RenderPass(scene, camera);
+  const renderScene2 = new RenderPass(scene, camera);
 
   const bloomPass = new UnrealBloomPass(
     new THREE.Vector2(sizes.width, sizes.height),
@@ -106,13 +124,13 @@ const initBasics = () => {
     });
 
   //Finish
-  composer = new EffectComposer(renderer);
-  composer.setSize(sizes.width, sizes.height);
-  composer.setPixelRatio(Math.min(2, window.devicePixelRatio));
+  bloomComposer = new EffectComposer(renderer);
+  bloomComposer.setSize(sizes.width, sizes.height);
+  bloomComposer.setPixelRatio(Math.min(2, window.devicePixelRatio));
 
-  composer.addPass(renderScene);
-  composer.addPass(bloomPass);
+  bloomComposer.addPass(renderScene);
+  bloomComposer.addPass(bloomPass);
 
-  return [renderer, camera, controls, scene, gui, composer];
+  return [renderer, camera, controls, scene, gui, bloomComposer];
 };
 export default initBasics;

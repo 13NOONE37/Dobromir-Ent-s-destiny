@@ -20,7 +20,7 @@ const enviormentMapTexture = cubeTextureLoader.load([
 ]);
 
 //Init basics
-const [renderer, camera, controls, scene, gui, composer] = initBasics();
+const [renderer, camera, controls, scene, gui, bloomComposer] = initBasics();
 scene.environment = enviormentMapTexture;
 
 //Init lights
@@ -139,15 +139,15 @@ const tick = () => {
   mixer && mixer.update(deltaTime);
 
   //Render
-  // renderer.render(scene, camera);
-  // composer.render();
   renderer.clear();
 
   camera.layers.set(1);
-  composer.render();
+  bloomComposer.render();
 
   renderer.clearDepth();
+
   camera.layers.set(0);
+
   renderer.render(scene, camera);
 
   stats.end();

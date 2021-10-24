@@ -33,7 +33,7 @@ const initSunLight = (scene, gui) => {
     // new THREE.DirectionalLightHelper(directionalLight)
     // new THREE.CameraHelper(directionalLight.shadow.camera)
   );
-  //a
+
   gui
     .add(directionalLight, "intensity")
     .name("Light Intensity")
