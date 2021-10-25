@@ -5,6 +5,8 @@ import Stats from "stats.js";
 import initSunLight from "./Assets/Config/SunLight";
 import initLoadingManagers from "./Assets/Config/LoadingManagers";
 import initBasics from "./Assets/Config/InitBasics";
+import initInputControler from "./Assets/Config/InputControler";
+import initWeatherControler from "./Assets/Config/WeatherControler";
 
 const [textureLoader, cubeTextureLoader, modelLoader] = initLoadingManagers();
 
@@ -22,9 +24,14 @@ const enviormentMapTexture = cubeTextureLoader.load([
 //Init basics
 const [renderer, camera, controls, scene, gui, bloomComposer] = initBasics();
 scene.environment = enviormentMapTexture;
+//Control keyboard & mouse
+initInputControler();
 
 //Init lights
-initSunLight(scene, gui);
+const [sunLight, sunObject] = initSunLight(scene, gui);
+
+let currentTime = 0;
+initWeatherControler(scene, sunLight, sunObject);
 
 //Test
 
@@ -125,18 +132,26 @@ stats.showPanel(0);
 document.body.appendChild(stats.dom);
 
 const clock = new THREE.Clock();
-let timeCurrent = 0;
 
 const tick = () => {
   stats.begin();
   const elapsedTime = clock.getElapsedTime();
-  const deltaTime = elapsedTime - timeCurrent;
-  timeCurrent = elapsedTime;
+  const deltaTime = elapsedTime - currentTime;
+  currentTime = elapsedTime;
 
   //Update controls
   controls.update();
   //Update mixer
   mixer && mixer.update(deltaTime);
+
+  //sun
+  // sunLight.position.x = Math.cos(currentTime / 5) * 1500;
+  // sunLight.position.y = Math.sin(currentTime / 5) * 1500;
+  // sunLight.intensity
+  // console.log(
+  //   Math.sin(50 / ((Math.sin(currentTime / 5) * 1500 * Math.PI) / 180))
+  // );
+  // sunObject.position.copy(sunLight.position);
 
   //Render
   renderer.clear();

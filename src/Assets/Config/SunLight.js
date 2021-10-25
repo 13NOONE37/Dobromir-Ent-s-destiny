@@ -11,13 +11,13 @@ const initSunLight = (scene, gui) => {
   };
   const directionalLight = new THREE.DirectionalLight(
     new THREE.Color(LightDebugObject.color),
-    6.5
+    10
   );
   directionalLight.castShadow = true;
   directionalLight.shadow.mapSize.width = 1024 * 4;
   directionalLight.shadow.mapSize.height = 1024 * 4;
-  directionalLight.shadow.camera.far = 2000;
-  directionalLight.shadow.camera.near = 0.001;
+  directionalLight.shadow.camera.far = 2500;
+  directionalLight.shadow.camera.near = 1;
 
   directionalLight.shadow.camera.left = LightDebugObject.d;
   directionalLight.shadow.camera.top = LightDebugObject.d;
@@ -25,13 +25,13 @@ const initSunLight = (scene, gui) => {
   directionalLight.shadow.camera.bottom = -LightDebugObject.d;
   directionalLight.shadow.bias = -0.001;
 
-  directionalLight.position.set(550, 1000, 550);
+  directionalLight.position.set(550, 1000, 0);
   directionalLight.target.position.set(0, 0, 0);
   scene.add(
     directionalLight,
-    directionalLight.target
-    // new THREE.DirectionalLightHelper(directionalLight)
-    // new THREE.CameraHelper(directionalLight.shadow.camera)
+    directionalLight.target,
+    new THREE.DirectionalLightHelper(directionalLight),
+    new THREE.CameraHelper(directionalLight.shadow.camera)
   );
 
   gui
@@ -91,6 +91,8 @@ const initSunLight = (scene, gui) => {
 
   const ambientLight = new THREE.AmbientLight(LightDebugObject.surfaceColor, 1);
   scene.add(ambientLight);
+
+  return [directionalLight, sun];
 };
 
 export default initSunLight;
