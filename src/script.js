@@ -2,11 +2,10 @@ import "./style.css";
 import * as THREE from "three";
 import Stats from "stats.js";
 
-import initSunLight from "./Assets/Config/SunLight";
+import initWeatherControler from "./Assets/Config/WeatherControler";
 import initLoadingManagers from "./Assets/Config/LoadingManagers";
 import initBasics from "./Assets/Config/InitBasics";
 import initInputControler from "./Assets/Config/InputControler";
-import initWeatherControler from "./Assets/Config/WeatherControler";
 
 const [textureLoader, cubeTextureLoader, modelLoader] = initLoadingManagers();
 
@@ -28,10 +27,7 @@ scene.environment = enviormentMapTexture;
 initInputControler();
 
 //Init lights
-const [sunLight, sunObject] = initSunLight(scene, gui);
-
-let currentTime = 0;
-initWeatherControler(scene, sunLight, sunObject);
+const [sunLight, sunObject] = initWeatherControler(scene, gui);
 
 //Test
 
@@ -132,6 +128,7 @@ stats.showPanel(0);
 document.body.appendChild(stats.dom);
 
 const clock = new THREE.Clock();
+let currentTime = 0;
 
 const tick = () => {
   stats.begin();
@@ -144,7 +141,6 @@ const tick = () => {
   //Update mixer
   mixer && mixer.update(deltaTime);
 
-  //sun
   // sunLight.position.x = Math.cos(currentTime / 5) * 1500;
   // sunLight.position.y = Math.sin(currentTime / 5) * 1500;
   // sunLight.intensity
