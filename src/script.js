@@ -23,6 +23,7 @@ const enviormentMapTexture = cubeTextureLoader.load([
 //Init basics
 const [renderer, camera, controls, scene, gui, bloomComposer] = initBasics();
 scene.environment = enviormentMapTexture;
+
 //Control keyboard & mouse
 initInputControler();
 

@@ -1,7 +1,9 @@
 import * as THREE from "three";
 
-import vertexShader from "/static/Assets/Shaders/Sun/vertex.glsl";
-import fragmentShader from "/static/Assets/Shaders/Sun/fragment.glsl";
+import SunVertexShader from "/static/Assets/Shaders/Sun/vertex.glsl";
+import SunFragmentShader from "/static/Assets/Shaders/Sun/fragment.glsl";
+import CloudVertexShader from "/static/Assets/Shaders/Cloud/vertex.glsl";
+import CloudFragmentShader from "/static/Assets/Shaders/Cloud/fragment.glsl";
 
 const initWeatherControler = (scene, gui) => {
   //!--> Sun <--!//
@@ -76,8 +78,8 @@ const initWeatherControler = (scene, gui) => {
 
   const sunG = new THREE.SphereBufferGeometry(100, 16, 16, 0.5);
   const sunM = new THREE.ShaderMaterial({
-    vertexShader: vertexShader,
-    fragmentShader: fragmentShader,
+    vertexShader: SunVertexShader,
+    fragmentShader: SunFragmentShader,
     uniforms: {
       uSurfaceColor: { value: new THREE.Color(LightDebugObject.surfaceColor) },
       uDepthColor: { value: new THREE.Color(LightDebugObject.depthColor) },
@@ -95,10 +97,17 @@ const initWeatherControler = (scene, gui) => {
 
   //!--> Cluds <--!//
   const cloudGeometry = new THREE.PlaneBufferGeometry(1500, 1500, 512, 512);
-  const cloudMaterial = new THREE.MeshBasicMaterial({ color: 0x87cbde });
+  const cloudMaterial = new THREE.ShaderMaterial({
+    vertexShader: CloudVertexShader,
+    fragmentShader: CloudFragmentShader,
+    uniforms: {
+      // u_resolution: { x: 10, y: 20 },
+      u_time: 0,
+    },
+  });
   const cloud = new THREE.Mesh(cloudGeometry, cloudMaterial);
   cloud.rotateX(Math.PI * 0.5);
-  cloud.position.y = directionalLight.position.y;
+  cloud.position.y = directionalLight.position.y + 100;
   cloud.layers.set(1);
   scene.add(cloud);
 
