@@ -1,117 +1,120 @@
 import * as THREE from "three";
+import { Sky } from "three/examples/jsm/objects/Sky";
 
-import SunVertexShader from "/static/Assets/Shaders/Sun/vertex.glsl";
-import SunFragmentShader from "/static/Assets/Shaders/Sun/fragment.glsl";
-import CloudVertexShader from "/static/Assets/Shaders/Cloud/vertex.glsl";
-import CloudFragmentShader from "/static/Assets/Shaders/Cloud/fragment.glsl";
+const initWeatherControler = (renderer, scene, gui) => {
+  //!--> LIGHTS
 
-const initWeatherControler = (scene, gui) => {
-  //!--> Sun <--!//
-  const LightDebugObject = {
-    surfaceColor: 0xfff3bf,
-    depthColor: 0xfff3bf,
-    d: 1000,
-  };
-  const directionalLight = new THREE.DirectionalLight(
-    new THREE.Color(LightDebugObject.color),
-    10
-  );
-  directionalLight.castShadow = true;
-  directionalLight.shadow.mapSize.width = 1024 * 4;
-  directionalLight.shadow.mapSize.height = 1024 * 4;
-  directionalLight.shadow.camera.far = 2500;
-  directionalLight.shadow.camera.near = 1;
-
-  directionalLight.shadow.camera.left = LightDebugObject.d;
-  directionalLight.shadow.camera.top = LightDebugObject.d;
-  directionalLight.shadow.camera.right = -LightDebugObject.d;
-  directionalLight.shadow.camera.bottom = -LightDebugObject.d;
-  directionalLight.shadow.bias = -0.001;
-
-  directionalLight.position.set(550, 1000, 0);
-  directionalLight.target.position.set(0, 0, 0);
-  scene.add(
-    directionalLight,
-    directionalLight.target
-    // new THREE.DirectionalLightHelper(directionalLight),
-    // new THREE.CameraHelper(directionalLight.shadow.camera)
-  );
-
-  gui
-    .add(directionalLight, "intensity")
-    .name("Light Intensity")
-    .step(0.1)
-    .min(0)
-    .max(20);
-  gui
-    .addColor(LightDebugObject, "surfaceColor")
-    .name("Light SurfaceColor")
-    .onFinishChange((value) => {
-      LightDebugObject.surfaceColor = value;
-      directionalLight.color = new THREE.Color(value);
-      sunM.uniforms.uSurfaceColor = { value: new THREE.Color(value) };
-    });
-  gui
-    .addColor(LightDebugObject, "depthColor")
-    .name("Light DepthColor")
-    .onFinishChange((value) => {
-      sunM.uniforms.uDepthColor = { value: new THREE.Color(value) };
-    });
-  gui
-    .add(directionalLight.position, "x")
-    .name("Light x")
-    .step(1)
-    .min(10)
-    .max(50);
-  gui
-    .add(directionalLight.position, "y")
-    .name("Light y")
-    .step(1)
-    .min(10)
-    .max(50);
-  gui
-    .add(directionalLight.position, "z")
-    .name("Light z")
-    .step(1)
-    .min(10)
-    .max(50);
-
-  const sunG = new THREE.SphereBufferGeometry(100, 16, 16, 0.5);
-  const sunM = new THREE.ShaderMaterial({
-    vertexShader: SunVertexShader,
-    fragmentShader: SunFragmentShader,
-    uniforms: {
-      uSurfaceColor: { value: new THREE.Color(LightDebugObject.surfaceColor) },
-      uDepthColor: { value: new THREE.Color(LightDebugObject.depthColor) },
-    },
-  });
-
-  const sun = new THREE.Mesh(sunG, sunM);
-  sun.layers.set(1);
-  sun.position.copy(directionalLight.position);
-
-  scene.add(sun);
-
-  const ambientLight = new THREE.AmbientLight(LightDebugObject.surfaceColor, 1);
+  //Ambient
+  const ambientLight = new THREE.AmbientLight(0xffffff, 1);
   scene.add(ambientLight);
 
-  //!--> Cluds <--!//
-  const cloudGeometry = new THREE.PlaneBufferGeometry(1500, 1500, 512, 512);
-  const cloudMaterial = new THREE.ShaderMaterial({
-    vertexShader: CloudVertexShader,
-    fragmentShader: CloudFragmentShader,
-    uniforms: {
-      // u_resolution: { x: 10, y: 20 },
-      u_time: 0,
-    },
-  });
-  const cloud = new THREE.Mesh(cloudGeometry, cloudMaterial);
-  cloud.rotateX(Math.PI * 0.5);
-  cloud.position.y = directionalLight.position.y + 100;
-  cloud.layers.set(1);
-  scene.add(cloud);
+  //HemisphereLight
+  const hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6);
 
-  return [directionalLight, sun];
+  hemiLight.color.setHSL(0.6, 1, 0.6);
+  hemiLight.groundColor.setHSL(0.095, 1, 0.75);
+  hemiLight.position.set(0, 50, 0);
+  scene.add(hemiLight);
+
+  //directionalLight
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 10);
+  directionalLight.color.setHSL(0.1, 1, 0.95); //#fff4e2
+  directionalLight.position.set(-1, 10, 1); // dirLight.position.set(550, 1000, 0);
+  directionalLight.position.multiplyScalar(30);
+
+  scene.add(directionalLight);
+
+  directionalLight.castShadow = true;
+
+  directionalLight.shadow.mapSize.width = 2048;
+  directionalLight.shadow.mapSize.height = 2048;
+
+  const d = 50;
+
+  directionalLight.shadow.camera.left = -d;
+  directionalLight.shadow.camera.top = d;
+  directionalLight.shadow.camera.right = d;
+  directionalLight.shadow.camera.bottom = -d;
+
+  directionalLight.shadow.bias = -0.0001;
+  directionalLight.shadow.camera.far = 3500;
+
+  //SKY
+
+  let sky, sun, effectController, guiChanged;
+  const initSky = () => {
+    // Add Sky
+    sky = new Sky();
+    sky.scale.setScalar(450000);
+    scene.add(sky);
+
+    sun = new THREE.Vector3();
+
+    /// GUI
+
+    effectController = {
+      turbidity: 10,
+      rayleigh: 3,
+      mieCoefficient: 0.005,
+      mieDirectionalG: 0.7,
+      elevation: 2,
+      azimuth: 180,
+      exposure: renderer.toneMappingExposure,
+    };
+
+    guiChanged = () => {
+      const uniforms = sky.material.uniforms;
+      uniforms["turbidity"].value = effectController.turbidity;
+      uniforms["rayleigh"].value = effectController.rayleigh;
+      uniforms["mieCoefficient"].value = effectController.mieCoefficient;
+      uniforms["mieDirectionalG"].value = effectController.mieDirectionalG;
+
+      const phi = THREE.MathUtils.degToRad(90 - effectController.elevation);
+      const theta = THREE.MathUtils.degToRad(effectController.azimuth);
+
+      sun.setFromSphericalCoords(1, phi, theta);
+
+      uniforms["sunPosition"].value.copy(sun);
+
+      renderer.toneMappingExposure = effectController.exposure;
+    };
+
+    const SkyProperties = gui.addFolder("Sky");
+    SkyProperties.add(effectController, "turbidity", 0.0, 20.0, 0.1).onChange(
+      guiChanged
+    );
+    SkyProperties.add(effectController, "rayleigh", 0.0, 4, 0.001).onChange(
+      guiChanged
+    );
+    SkyProperties.add(
+      effectController,
+      "mieCoefficient",
+      0.0,
+      0.1,
+      0.001
+    ).onChange(guiChanged);
+    SkyProperties.add(
+      effectController,
+      "mieDirectionalG",
+      0.0,
+      1,
+      0.001
+    ).onChange(guiChanged);
+    SkyProperties.add(effectController, "elevation", 0, 180, 0.1).onChange(
+      guiChanged
+    );
+    SkyProperties.add(effectController, "azimuth", -180, 180, 0.1).onChange(
+      guiChanged
+    );
+    SkyProperties.add(effectController, "exposure", 0, 1, 0.0001).onChange(
+      guiChanged
+    );
+
+    guiChanged();
+  };
+  initSky();
+
+  return [directionalLight, sun, effectController, guiChanged];
 };
 
 export default initWeatherControler;
