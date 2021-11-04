@@ -32,7 +32,7 @@ initInputControler();
 
 //Init lights
 // const [sunLight, sunObject] = initWeatherControler(scene, gui);
-const [sunLight, sunObject, skyEffectControler, skyGuiChanged] =
+const [sunLight, sunObject, skyEffectControler, skyGuiChanged, clouds] =
   initWeatherControler(renderer, scene, gui, modelLoader);
 //Test
 
@@ -88,12 +88,14 @@ const tick = () => {
   mixer && mixer.update(deltaTime);
 
   //Sun update
-  // skyEffectControler.elevation = ((currentTime / 50) % 180) + 1;
-
+  skyEffectControler.elevation = ((currentTime / 50) % 180) + 1;
   skyGuiChanged();
   sunLight.position.x = sunObject.x * 1000;
   sunLight.position.y = sunObject.y * 1000;
   sunLight.position.z = sunObject.z * 1000;
+
+  //Clouds
+
   // console.log(sunObject);
 
   //Render

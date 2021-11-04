@@ -122,8 +122,8 @@ const initWeatherControler = (renderer, scene, gui, modelLoader) => {
       height: 3000,
       scaleCoefficient: 90,
     };
-
-    const initClouds = (cloud1, cloud2, cloud3) => {
+    let cloud1, cloud2, cloud3;
+    const initClouds = () => {
       for (let i = 0; i < cloudDebug.count; i++) {
         let cloud;
 
@@ -156,17 +156,22 @@ const initWeatherControler = (renderer, scene, gui, modelLoader) => {
         scene.add(cloud);
       }
     };
-    modelLoader.load("/Assets/Enviorment/cloud1.glb", (cloud1) => {
-      modelLoader.load("/Assets/Enviorment/cloud2.glb", (cloud2) => {
-        modelLoader.load("/Assets/Enviorment/cloud3.glb", (cloud3) => {
-          initClouds(cloud1.scene, cloud2.scene, cloud3.scene);
+    modelLoader.load("/Assets/Enviorment/cloud1.glb", (cloud11) => {
+      modelLoader.load("/Assets/Enviorment/cloud2.glb", (cloud22) => {
+        modelLoader.load("/Assets/Enviorment/cloud3.glb", (cloud33) => {
+          cloud1 = cloud11.scene;
+          cloud2 = cloud22.scene;
+          cloud3 = cloud33.scene;
+          initClouds();
         });
       });
     });
-  };
-  renderClouds();
 
-  return [directionalLight, sun, effectController, guiChanged];
+    return [cloud1, cloud2, cloud3];
+  };
+  const clouds = renderClouds();
+
+  return [directionalLight, sun, effectController, guiChanged, clouds];
 };
 
 export default initWeatherControler;
