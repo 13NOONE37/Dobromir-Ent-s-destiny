@@ -117,10 +117,10 @@ const initWeatherControler = (renderer, scene, gui, modelLoader) => {
 
   const renderClouds = () => {
     const cloudDebug = {
-      count: 200,
-      radius: 10000,
-      height: 2500,
-      scaleCoefficient: 80,
+      count: 250,
+      radius: 15000,
+      height: 3000,
+      scaleCoefficient: 90,
     };
 
     const initClouds = (cloud1, cloud2, cloud3) => {
@@ -147,6 +147,8 @@ const initWeatherControler = (renderer, scene, gui, modelLoader) => {
           Math.random() * cloudDebug.scaleCoefficient
         );
         cloud.scale.set(scaleOfCloud, scaleOfCloud, scaleOfCloud);
+        cloud.rotation.x = Math.random() * Math.PI;
+        cloud.rotation.z = Math.random() * Math.PI;
 
         cloud.position.y = cloudDebug.height;
         cloud.position.x = (0.5 - Math.random()) * cloudDebug.radius;
