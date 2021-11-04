@@ -16,7 +16,6 @@ const initLoadingManagers = () => {
   const textureLoader = new THREE.TextureLoader(loaderManager);
   const cubeTextureLoader = new THREE.CubeTextureLoader(loaderManager);
   const modelLoader = new GLTFLoader(loaderManager);
-
   return [textureLoader, cubeTextureLoader, modelLoader];
 };
 export default initLoadingManagers;

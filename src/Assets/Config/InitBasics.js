@@ -64,7 +64,7 @@ const initBasics = () => {
   //Controls
   const controls = new OrbitControls(camera, canvas);
 
-  controls.maxPolarAngle = Math.PI * 0.5 - 0.01;
+  // controls.maxPolarAngle = Math.PI * 0.5 - 0.01;
   controls.enableDamping = true;
 
   //Postprocesing

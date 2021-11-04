@@ -1,7 +1,8 @@
 import * as THREE from "three";
+import { MeshBasicMaterial } from "three";
 import { Sky } from "three/examples/jsm/objects/Sky";
 
-const initWeatherControler = (renderer, scene, gui) => {
+const initWeatherControler = (renderer, scene, gui, modelLoader) => {
   //!--> LIGHTS
 
   //Ambient
@@ -113,6 +114,55 @@ const initWeatherControler = (renderer, scene, gui) => {
     guiChanged();
   };
   initSky();
+
+  const renderClouds = () => {
+    const cloudDebug = {
+      count: 200,
+      radius: 10000,
+      height: 2500,
+      scaleCoefficient: 80,
+    };
+
+    const initClouds = (cloud1, cloud2, cloud3) => {
+      for (let i = 0; i < cloudDebug.count; i++) {
+        let cloud;
+
+        switch (((Math.floor(Math.random() * 10) + i) % 3) + 1) {
+          case 1: {
+            cloud = cloud1.clone();
+            break;
+          }
+          case 2: {
+            cloud = cloud2.clone();
+            break;
+          }
+          case 3: {
+            cloud = cloud3.clone();
+            break;
+          }
+        }
+
+        const scaleOfCloud = Math.max(
+          10,
+          Math.random() * cloudDebug.scaleCoefficient
+        );
+        cloud.scale.set(scaleOfCloud, scaleOfCloud, scaleOfCloud);
+
+        cloud.position.y = cloudDebug.height;
+        cloud.position.x = (0.5 - Math.random()) * cloudDebug.radius;
+        cloud.position.z = (0.5 - Math.random()) * cloudDebug.radius;
+        scene.add(cloud);
+      }
+    };
+    modelLoader.load("/Assets/Enviorment/cloud1.glb", (cloud1) => {
+      modelLoader.load("/Assets/Enviorment/cloud2.glb", (cloud2) => {
+        modelLoader.load("/Assets/Enviorment/cloud3.glb", (cloud3) => {
+          initClouds(cloud1.scene, cloud2.scene, cloud3.scene);
+        });
+      });
+    });
+  };
+  renderClouds();
 
   return [directionalLight, sun, effectController, guiChanged];
 };

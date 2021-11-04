@@ -33,7 +33,7 @@ initInputControler();
 //Init lights
 // const [sunLight, sunObject] = initWeatherControler(scene, gui);
 const [sunLight, sunObject, skyEffectControler, skyGuiChanged] =
-  initWeatherControler(renderer, scene, gui);
+  initWeatherControler(renderer, scene, gui, modelLoader);
 //Test
 
 //floor
@@ -51,7 +51,7 @@ let mixer = null;
 let czesio = null;
 
 modelLoader.load("/Assets/Characters/czesio2.glb", (model) => {
-  model.scene.scale.set(10, 10, 10);
+  model.scene.scale.set(2, 2, 2);
   czesio = model.scene;
   czesio.children[0].traverse((n) => {
     if (n.isMesh) {
@@ -88,7 +88,8 @@ const tick = () => {
   mixer && mixer.update(deltaTime);
 
   //Sun update
-  skyEffectControler.elevation = ((currentTime / 50) % 180) + 1;
+  // skyEffectControler.elevation = ((currentTime / 50) % 180) + 1;
+
   skyGuiChanged();
   sunLight.position.x = sunObject.x * 1000;
   sunLight.position.y = sunObject.y * 1000;
