@@ -47,27 +47,27 @@ const initInputControler = () => {
         break;
 
       case 83: //s
-        keys.backward = true;
+        keys.backward = false;
         break;
 
       case 65: //a
-        keys.left = true;
+        keys.left = false;
         break;
 
       case 68: //d
-        keys.right = true;
+        keys.right = false;
         break;
 
       case 32: //space
-        keys.space = true;
+        keys.space = false;
         break;
 
       case 16: //shift
-        keys.shift = true;
+        keys.shift = false;
         break;
 
       case 69: //e
-        keys.action = true;
+        keys.action = false;
         break;
     }
   };

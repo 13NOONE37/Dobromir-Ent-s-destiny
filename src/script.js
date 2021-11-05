@@ -111,9 +111,9 @@ const tick = () => {
   if (keys.right) {
     czesio.position.x -= 0.1;
   }
-  console.log(
-    "Może Lepiej zrealizować te funkcje poprzez wysyłanie postaci aktualnie grywalnej do kontrolera i poruszania przez gsap"
-  );
+  // console.log(
+  //   "Może Lepiej zrealizować te funkcje poprzez wysyłanie postaci aktualnie grywalnej do kontrolera i poruszania przez gsap"
+  // );
 
   //Render
   renderer.render(scene, camera);
