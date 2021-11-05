@@ -28,7 +28,7 @@ scene.environment = enviormentMapTexture;
 scene.background = enviormentMapTexture;
 
 //Control keyboard & mouse
-initInputControler();
+const keys = initInputControler();
 
 //Init lights
 // const [sunLight, sunObject] = initWeatherControler(scene, gui);
@@ -52,6 +52,8 @@ let czesio = null;
 
 modelLoader.load("/Assets/Characters/czesio2.glb", (model) => {
   model.scene.scale.set(2, 2, 2);
+  model.scene.position.y = -0.1;
+
   czesio = model.scene;
   czesio.children[0].traverse((n) => {
     if (n.isMesh) {
@@ -96,7 +98,22 @@ const tick = () => {
 
   //Clouds
 
-  // console.log(sunObject);
+  //Move character
+  if (keys.forward) {
+    czesio.position.z += 0.1;
+  }
+  if (keys.backward) {
+    czesio.position.z -= 0.1;
+  }
+  if (keys.left) {
+    czesio.position.x += 0.1;
+  }
+  if (keys.right) {
+    czesio.position.x -= 0.1;
+  }
+  console.log(
+    "Może Lepiej zrealizować te funkcje poprzez wysyłanie postaci aktualnie grywalnej do kontrolera i poruszania przez gsap"
+  );
 
   //Render
   renderer.render(scene, camera);

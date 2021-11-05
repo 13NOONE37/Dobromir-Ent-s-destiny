@@ -53,6 +53,12 @@ const initWeatherControler = (renderer, scene, gui, modelLoader) => {
 
     /// GUI
 
+    //Dla nocy
+    //turbidy: 20,
+    // minCeoficient: 0,
+    // minDirectionalG:0.7,
+    // exposure:0.07
+
     effectController = {
       turbidity: 10,
       rayleigh: 3,
