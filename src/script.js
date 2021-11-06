@@ -78,6 +78,54 @@ document.body.appendChild(stats.dom);
 const clock = new THREE.Clock();
 let currentTime = 0;
 
+const cameraDebug = {
+  lookX: 0,
+  lookY: 0,
+  lookZ: 100,
+
+  offsetX: 0,
+  offsetY: 15,
+  offsetZ: -20,
+};
+const cameraFolder = gui.addFolder("Camera");
+cameraFolder.add(cameraDebug, "lookX").min(0).max(100).name("lookX");
+cameraFolder.add(cameraDebug, "lookY").min(0).max(100).name("lookY");
+cameraFolder.add(cameraDebug, "lookZ").min(0).max(100).name("lookZ");
+cameraFolder.add(cameraDebug, "offsetX").min(0).max(100).name("offsetX");
+cameraFolder.add(cameraDebug, "offsetY").min(0).max(100).name("offsetY");
+cameraFolder.add(cameraDebug, "offsetZ").min(-50).max(100).name("offsetZ");
+
+const thirdPersonCamera = () => {
+  const calculateIdealOffset = () => {
+    const idealOffset = new THREE.Vector3(
+      cameraDebug.offsetX,
+      cameraDebug.offsetY,
+      cameraDebug.offsetZ
+    );
+    idealOffset.applyQuaternion(czesio.quaternion);
+    idealOffset.add(czesio.position);
+
+    return idealOffset;
+  };
+  const calculateIdealLookAt = () => {
+    const idealLookAt = new THREE.Vector3(
+      cameraDebug.lookX,
+      cameraDebug.lookY,
+      cameraDebug.lookZ
+    );
+    idealLookAt.applyQuaternion(czesio.quaternion);
+    idealLookAt.add(czesio.position);
+
+    return idealLookAt;
+  };
+
+  const idealOffset = calculateIdealOffset();
+  const idealLookAt = calculateIdealLookAt();
+
+  camera.position.copy(idealOffset);
+  camera.lookAt(idealLookAt);
+};
+
 const tick = () => {
   stats.begin();
   const elapsedTime = clock.getElapsedTime();
@@ -96,20 +144,23 @@ const tick = () => {
   sunLight.position.y = sunObject.y * 1000;
   sunLight.position.z = sunObject.z * 1000;
 
+  // czesio && thirdPersonCamera();
   //Clouds
 
   //Move character
   if (keys.forward) {
-    czesio.position.z += 0.1;
+    czesio.position.z += 1;
   }
   if (keys.backward) {
-    czesio.position.z -= 0.1;
+    czesio.position.z -= 1;
   }
   if (keys.left) {
-    czesio.position.x += 0.1;
+    // czesio.position.x += 0.1;
+    czesio.rotation.y += 0.05;
   }
   if (keys.right) {
-    czesio.position.x -= 0.1;
+    // czesio.position.x -= 0.1;
+    czesio.rotation.y -= 0.05;
   }
   // console.log(
   //   "Może Lepiej zrealizować te funkcje poprzez wysyłanie postaci aktualnie grywalnej do kontrolera i poruszania przez gsap"
