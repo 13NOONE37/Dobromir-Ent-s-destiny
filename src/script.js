@@ -50,7 +50,9 @@ scene.add(floor);
 let mixer = null;
 let czesio = null;
 
-modelLoader.load("/Assets/Characters/czesio2.glb", (model) => {
+modelLoader.load("/Assets/Characters/czesioCopy.glb", (model) => {
+  console.log(model);
+
   model.scene.scale.set(2, 2, 2);
   model.scene.position.y = -0.1;
 
@@ -66,7 +68,7 @@ modelLoader.load("/Assets/Characters/czesio2.glb", (model) => {
 
   mixer = new THREE.AnimationMixer(czesio);
 
-  const action = mixer.clipAction(model.animations[1]);
+  const action = mixer.clipAction(model.animations[3]);
   action.play();
 });
 
@@ -149,10 +151,10 @@ const tick = () => {
 
   //Move character
   if (keys.forward) {
-    czesio.position.z += 1;
+    czesio.position.z += 0.1;
   }
   if (keys.backward) {
-    czesio.position.z -= 1;
+    czesio.position.z -= 0.1;
   }
   if (keys.left) {
     // czesio.position.x += 0.1;

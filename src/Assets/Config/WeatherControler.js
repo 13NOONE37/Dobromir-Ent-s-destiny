@@ -10,15 +10,15 @@ const initWeatherControler = (renderer, scene, gui, modelLoader) => {
   scene.add(ambientLight);
 
   //HemisphereLight
-  const hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6);
+  const hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6); //0.6
 
   hemiLight.color.setHSL(0.6, 1, 0.6);
   hemiLight.groundColor.setHSL(0.095, 1, 0.75);
   hemiLight.position.set(0, 50, 0);
-  scene.add(hemiLight);
+  // scene.add(hemiLight);
 
   //directionalLight
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 10);
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 12); //10
   directionalLight.color.setHSL(0.1, 1, 0.95); //#fff4e2
   directionalLight.position.set(-1, 10, 1); // dirLight.position.set(550, 1000, 0);
   directionalLight.position.multiplyScalar(30);
