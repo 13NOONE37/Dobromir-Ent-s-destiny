@@ -1,6 +1,7 @@
 import "./style.css";
 import * as THREE from "three";
 import Stats from "stats.js";
+import { gsap } from "gsap";
 
 import initWeatherControler from "./Assets/Config/WeatherControler";
 import initLoadingManagers from "./Assets/Config/LoadingManagers";
@@ -37,17 +38,71 @@ const [sunLight, sunObject, skyEffectControler, skyGuiChanged, clouds] =
 //Test
 
 //floor
-const floorGeometry = new THREE.PlaneBufferGeometry(25000, 25000, 512, 512);
+
+const texture1 = textureLoader.load(
+  "/Assets/Enviorment/Thumbnails/Terrain_Alpha (3).jpg"
+);
+const texture2 = textureLoader.load(
+  "/Assets/Enviorment/Thumbnails/AmbientOcclusionMap.jpg"
+);
+const texture3 = textureLoader.load(
+  "/Assets/Enviorment/Thumbnails/NormalMap.jpg"
+);
+const texture4 = textureLoader.load(
+  "/Assets/Enviorment/Thumbnails/Specular.jpg"
+);
+
+const floorGeometry = new THREE.PlaneBufferGeometry(2500, 2500, 1024, 1024);
 const floorMaterial = new THREE.MeshStandardMaterial({
-  color: new THREE.Color("#44ffee"),
+  color: new THREE.Color("#444"),
+  displacementMap: texture1,
+  displacementScale: 824,
+  aoMap: texture2,
+  aoMapIntensity: 15,
+  normalMap: texture3,
 });
+
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
 floor.receiveShadow = true;
 floor.castShadow = true;
 floor.rotateX(-Math.PI * 0.5);
+
+floor.geometry.setAttribute(
+  "uv2",
+  new THREE.BufferAttribute(floor.geometry.attributes.uv.array, 2)
+);
 scene.add(floor);
 
+//forest
+const initForest = (treeBase) => {
+  const forest = new THREE.Group();
+  const forestDebug = {
+    count: 50,
+    radius: 150,
+    scaleCoefficient: 90,
+  };
+
+  const renderForest = () => {
+    for (let i = 0; i < forestDebug.count; i++) {
+      const tree = treeBase.clone();
+
+      tree.scale.set(10, 10, 10);
+      tree.position.x = (0.5 - Math.random()) * forestDebug.radius;
+      tree.position.z = (0.5 - Math.random()) * forestDebug.radius;
+      forest.add(tree);
+    }
+  };
+  renderForest();
+
+  scene.add(forest);
+};
+
+modelLoader.load("/Assets/Enviorment/Tree11.glb", (tree) => {
+  initForest(tree.scene);
+});
+
 let mixer = null;
+let czesioWalkAction = null;
 let czesio = null;
 
 modelLoader.load("/Assets/Characters/czesioCopy.glb", (model) => {
@@ -68,8 +123,8 @@ modelLoader.load("/Assets/Characters/czesioCopy.glb", (model) => {
 
   mixer = new THREE.AnimationMixer(czesio);
 
-  const action = mixer.clipAction(model.animations[3]);
-  action.play();
+  czesioWalkAction = mixer.clipAction(model.animations[3]);
+  czesioWalkAction.play();
 });
 
 //Animate
@@ -140,11 +195,11 @@ const tick = () => {
   mixer && mixer.update(deltaTime);
 
   //Sun update
-  skyEffectControler.elevation = ((currentTime / 50) % 180) + 1;
-  skyGuiChanged();
-  sunLight.position.x = sunObject.x * 1000;
-  sunLight.position.y = sunObject.y * 1000;
-  sunLight.position.z = sunObject.z * 1000;
+  // skyEffectControler.elevation = ((currentTime / 50) % 180) + 1;
+  // skyGuiChanged();
+  // sunLight.position.x = sunObject.x * 1000;
+  // sunLight.position.y = sunObject.y * 1000;
+  // sunLight.position.z = sunObject.z * 1000;
 
   // czesio && thirdPersonCamera();
   //Clouds
@@ -152,9 +207,15 @@ const tick = () => {
   //Move character
   if (keys.forward) {
     czesio.position.z += 0.1;
+    // czesioWalkAction.play();
   }
+  // if (czesioWalkAction && !keys.forward && !keys.backward) {
+  //   czesioWalkAction.stop();
+  // }
+
   if (keys.backward) {
     czesio.position.z -= 0.1;
+    czesioWalkAction.play();
   }
   if (keys.left) {
     // czesio.position.x += 0.1;
