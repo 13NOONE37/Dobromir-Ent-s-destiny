@@ -64,7 +64,7 @@ const initWeatherControler = (renderer, scene, gui, modelLoader) => {
       rayleigh: 3,
       mieCoefficient: 0.005,
       mieDirectionalG: 0.7,
-      elevation: 2,
+      elevation: 32,
       azimuth: 180,
       exposure: renderer.toneMappingExposure,
     };

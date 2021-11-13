@@ -7,26 +7,14 @@ import initWeatherControler from "./Assets/Config/WeatherControler";
 import initLoadingManagers from "./Assets/Config/LoadingManagers";
 import initBasics from "./Assets/Config/InitBasics";
 import initInputControler from "./Assets/Config/InputControler";
-
-const [textureLoader, cubeTextureLoader, modelLoader] = initLoadingManagers();
+import updateAllMaterials from "./Assets/Config/UpdateAllMaterials";
 
 /*!--Base--!*/
-//eviorment texture
-const enviormentMapTexture = cubeTextureLoader.load([
-  "/Assets/Enviorment/px.png",
-  "/Assets/Enviorment/nx.png",
-  "/Assets/Enviorment/py.png",
-  "/Assets/Enviorment/ny.png",
-  "/Assets/Enviorment/pz.png",
-  "/Assets/Enviorment/nz.png",
-]);
 
 //Init basics
 const [renderer, camera, controls, scene, gui] = initBasics();
-
-// enviormentMapTexture.encoding = THREE.sRGBEncoding;
-scene.environment = enviormentMapTexture;
-scene.background = enviormentMapTexture;
+const [textureLoader, cubeTextureLoader, modelLoader, enviormentMapTexture] =
+  initLoadingManagers(scene);
 
 //Control keyboard & mouse
 const keys = initInputControler();
@@ -49,7 +37,7 @@ const texture3 = textureLoader.load(
   "/Assets/Enviorment/Thumbnails/NormalMap.jpg"
 );
 const texture4 = textureLoader.load(
-  "/Assets/Enviorment/Thumbnails/Specular.jpg"
+  "/Assets/Enviorment/Thumbnails/SpecularMap.jpg"
 );
 
 const floorGeometry = new THREE.PlaneBufferGeometry(2500, 2500, 1024, 1024);
@@ -63,8 +51,6 @@ const floorMaterial = new THREE.MeshStandardMaterial({
 });
 
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-floor.receiveShadow = true;
-floor.castShadow = true;
 floor.rotateX(-Math.PI * 0.5);
 
 floor.geometry.setAttribute(
@@ -77,28 +63,34 @@ scene.add(floor);
 const initForest = (treeBase) => {
   const forest = new THREE.Group();
   const forestDebug = {
-    count: 50,
-    radius: 150,
+    count: 15,
+    length: 450,
     scaleCoefficient: 90,
   };
 
   const renderForest = () => {
     for (let i = 0; i < forestDebug.count; i++) {
-      const tree = treeBase.clone();
+      for (let j = 0; j < forestDebug.count; j++) {
+        const tree = treeBase.clone();
 
-      tree.scale.set(10, 10, 10);
-      tree.position.x = (0.5 - Math.random()) * forestDebug.radius;
-      tree.position.z = (0.5 - Math.random()) * forestDebug.radius;
-      forest.add(tree);
+        tree.rotation.y = Math.PI * Math.random();
+        tree.scale.set(10, 10, 10);
+        tree.position.x = i * 50;
+        tree.position.z = j * 50;
+        forest.add(tree);
+        // gsap.to(tree.rotation, { duration: 6, y: 2 });
+      }
     }
   };
   renderForest();
 
+  forest.position.set(450, 0, 0);
   scene.add(forest);
+  updateAllMaterials(scene, enviormentMapTexture);
 };
 
 modelLoader.load("/Assets/Enviorment/Tree11.glb", (tree) => {
-  initForest(tree.scene);
+  initForest(tree.scene.children[0]);
 });
 
 let mixer = null;
@@ -106,25 +98,16 @@ let czesioWalkAction = null;
 let czesio = null;
 
 modelLoader.load("/Assets/Characters/czesioCopy.glb", (model) => {
-  console.log(model);
+  czesio = model.scene.children[0];
 
-  model.scene.scale.set(2, 2, 2);
-  model.scene.position.y = -0.1;
+  czesio.scale.set(2, 2, 2);
+  czesio.position.y = -0.1;
 
-  czesio = model.scene;
-  czesio.children[0].traverse((n) => {
-    if (n.isMesh) {
-      n.castShadow = true;
-      n.receiveShadow = true;
-    }
-    // if (n.material.map) n.material.map.anisotropy = 16;
-  });
   scene.add(czesio);
 
   mixer = new THREE.AnimationMixer(czesio);
 
   czesioWalkAction = mixer.clipAction(model.animations[3]);
-  czesioWalkAction.play();
 });
 
 //Animate
@@ -152,6 +135,7 @@ cameraFolder.add(cameraDebug, "offsetX").min(0).max(100).name("offsetX");
 cameraFolder.add(cameraDebug, "offsetY").min(0).max(100).name("offsetY");
 cameraFolder.add(cameraDebug, "offsetZ").min(-50).max(100).name("offsetZ");
 
+//Camera control funciton
 const thirdPersonCamera = () => {
   const calculateIdealOffset = () => {
     const idealOffset = new THREE.Vector3(
@@ -195,11 +179,11 @@ const tick = () => {
   mixer && mixer.update(deltaTime);
 
   //Sun update
-  // skyEffectControler.elevation = ((currentTime / 50) % 180) + 1;
-  // skyGuiChanged();
-  // sunLight.position.x = sunObject.x * 1000;
-  // sunLight.position.y = sunObject.y * 1000;
-  // sunLight.position.z = sunObject.z * 1000;
+  skyEffectControler.elevation = ((currentTime / 50) % 180) + 1;
+  skyGuiChanged();
+  sunLight.position.x = sunObject.x * 1000;
+  sunLight.position.y = sunObject.y * 100000; //Original 1000
+  sunLight.position.z = sunObject.z * 1000;
 
   // czesio && thirdPersonCamera();
   //Clouds
@@ -207,11 +191,11 @@ const tick = () => {
   //Move character
   if (keys.forward) {
     czesio.position.z += 0.1;
-    // czesioWalkAction.play();
+    czesioWalkAction.play();
   }
-  // if (czesioWalkAction && !keys.forward && !keys.backward) {
-  //   czesioWalkAction.stop();
-  // }
+  if (czesioWalkAction && !keys.forward && !keys.backward) {
+    czesioWalkAction.stop();
+  }
 
   if (keys.backward) {
     czesio.position.z -= 0.1;

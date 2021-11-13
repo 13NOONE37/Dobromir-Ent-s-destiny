@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-const updateAllMaterials = (scene) => {
+const updateAllMaterials = (scene, enviormentMapTexture) => {
   scene.traverse((child) => {
     if (
       child instanceof THREE.Mesh &&
