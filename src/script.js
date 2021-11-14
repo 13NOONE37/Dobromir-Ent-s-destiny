@@ -30,6 +30,7 @@ const [sunLight, sunObject, skyEffectControler, skyGuiChanged, clouds] =
 const texture1 = textureLoader.load(
   "/Assets/Enviorment/Thumbnails/Terrain_Alpha (3).jpg"
 );
+
 const texture2 = textureLoader.load(
   "/Assets/Enviorment/Thumbnails/AmbientOcclusionMap.jpg"
 );
@@ -40,18 +41,52 @@ const texture4 = textureLoader.load(
   "/Assets/Enviorment/Thumbnails/SpecularMap.jpg"
 );
 
+const groundAmbient = textureLoader.load("/Assets/Dirt/Ambient.jpg");
+const groundDisplacment = textureLoader.load("/Assets/Dirt/Displacment.jpg");
+const groundNormal = textureLoader.load("/Assets/Dirt/Normal.jpg");
+const groundBaseColor = textureLoader.load("/Assets/Dirt/BaseColor.jpg");
+const groundBump = textureLoader.load("/Assets/Dirt/Bump.jpg");
+
+const wrapValue = 256;
+
+groundAmbient.wrapS = THREE.RepeatWrapping;
+groundAmbient.wrapT = THREE.RepeatWrapping;
+groundAmbient.repeat.set(wrapValue, wrapValue);
+
+groundDisplacment.wrapS = THREE.RepeatWrapping;
+groundDisplacment.wrapT = THREE.RepeatWrapping;
+groundDisplacment.repeat.set(wrapValue, wrapValue);
+
+groundNormal.wrapS = THREE.RepeatWrapping;
+groundNormal.wrapT = THREE.RepeatWrapping;
+groundNormal.repeat.set(wrapValue, wrapValue);
+
+groundBaseColor.wrapS = THREE.RepeatWrapping;
+groundBaseColor.wrapT = THREE.RepeatWrapping;
+groundBaseColor.repeat.set(wrapValue, wrapValue);
+
+groundBump.wrapS = THREE.RepeatWrapping;
+groundBump.wrapT = THREE.RepeatWrapping;
+groundBump.repeat.set(wrapValue, wrapValue);
+
 const floorGeometry = new THREE.PlaneBufferGeometry(2500, 2500, 1024, 1024);
 const floorMaterial = new THREE.MeshStandardMaterial({
-  color: new THREE.Color("#444"),
-  displacementMap: texture1,
-  displacementScale: 824,
-  aoMap: texture2,
-  aoMapIntensity: 15,
-  normalMap: texture3,
+  color: new THREE.Color("#aaa"),
+  aoMap: groundAmbient,
+  displacementMap: groundDisplacment,
+  displacementScale: 1.05,
+  normalMap: groundNormal,
+  map: groundBaseColor,
+  bumpMap: groundBump,
+  bumpScale: 1.05,
 });
 
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
 floor.rotateX(-Math.PI * 0.5);
+
+//delete it
+floor.castShadow = true;
+floor.receiveShadow = true;
 
 floor.geometry.setAttribute(
   "uv2",
@@ -73,10 +108,12 @@ const initForest = (treeBase) => {
       for (let j = 0; j < forestDebug.count; j++) {
         const tree = treeBase.clone();
 
+        const randomScale = 3 - Math.random();
         tree.rotation.y = Math.PI * Math.random();
-        tree.scale.set(10, 10, 10);
-        tree.position.x = i * 50;
-        tree.position.z = j * 50;
+        tree.scale.set(randomScale, randomScale, randomScale);
+
+        tree.position.x = i * 12 + (0.5 - Math.random()) * 2;
+        tree.position.z = j * 12 + (0.5 - Math.random()) * 2;
         forest.add(tree);
         // gsap.to(tree.rotation, { duration: 6, y: 2 });
       }
@@ -84,7 +121,7 @@ const initForest = (treeBase) => {
   };
   renderForest();
 
-  forest.position.set(450, 0, 0);
+  forest.position.set(50, 0.1, 0);
   scene.add(forest);
   updateAllMaterials(scene, enviormentMapTexture);
 };
@@ -100,7 +137,6 @@ let czesio = null;
 modelLoader.load("/Assets/Characters/czesioCopy.glb", (model) => {
   czesio = model.scene.children[0];
 
-  czesio.scale.set(2, 2, 2);
   czesio.position.y = -0.1;
 
   scene.add(czesio);
@@ -179,18 +215,19 @@ const tick = () => {
   mixer && mixer.update(deltaTime);
 
   //Sun update
-  skyEffectControler.elevation = ((currentTime / 50) % 180) + 1;
+  skyEffectControler.elevation = (currentTime % 180) + 1; //Original skyEffectControler.elevation = ((currentTime / 50) % 180) + 1;
   skyGuiChanged();
-  sunLight.position.x = sunObject.x * 1000;
-  sunLight.position.y = sunObject.y * 100000; //Original 1000
-  sunLight.position.z = sunObject.z * 1000;
+  sunLight.position.x = sunObject.x * 100;
+  sunLight.position.y = sunObject.y * 100; //Original 1000
+  sunLight.position.z = sunObject.z * 100;
 
   // czesio && thirdPersonCamera();
   //Clouds
 
   //Move character
   if (keys.forward) {
-    czesio.position.z += 0.1;
+    sunLight.lookAt(czesio.position);
+    czesio.translateOnAxis(new THREE.Vector3(0, 0, 1), 0.1);
     czesioWalkAction.play();
   }
   if (czesioWalkAction && !keys.forward && !keys.backward) {
@@ -198,7 +235,7 @@ const tick = () => {
   }
 
   if (keys.backward) {
-    czesio.position.z -= 0.1;
+    czesio.translateOnAxis(new THREE.Vector3(0, 0, -1), 0.1);
     czesioWalkAction.play();
   }
   if (keys.left) {
@@ -208,6 +245,11 @@ const tick = () => {
   if (keys.right) {
     // czesio.position.x -= 0.1;
     czesio.rotation.y -= 0.05;
+  }
+  if (keys.space) {
+    gsap
+      .from(czesio.position, { duration: 1, y: 2 })
+      .to(czesio.position, { duration: 1, y: 0 });
   }
   // console.log(
   //   "Może Lepiej zrealizować te funkcje poprzez wysyłanie postaci aktualnie grywalnej do kontrolera i poruszania przez gsap"

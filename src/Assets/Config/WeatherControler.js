@@ -23,14 +23,11 @@ const initWeatherControler = (renderer, scene, gui, modelLoader) => {
   directionalLight.position.set(-1, 10, 1); // dirLight.position.set(550, 1000, 0);
   directionalLight.position.multiplyScalar(30);
 
-  scene.add(directionalLight);
-
   directionalLight.castShadow = true;
+  directionalLight.shadow.mapSize.width = 1024 * 4;
+  directionalLight.shadow.mapSize.height = 1024 * 4;
 
-  directionalLight.shadow.mapSize.width = 2048;
-  directionalLight.shadow.mapSize.height = 2048;
-
-  const d = 50;
+  const d = 100;
 
   directionalLight.shadow.camera.left = -d;
   directionalLight.shadow.camera.top = d;
@@ -38,7 +35,13 @@ const initWeatherControler = (renderer, scene, gui, modelLoader) => {
   directionalLight.shadow.camera.bottom = -d;
 
   directionalLight.shadow.bias = -0.0001;
-  directionalLight.shadow.camera.far = 3500;
+  directionalLight.shadow.camera.far = 500;
+
+  scene.add(
+    directionalLight,
+    new THREE.DirectionalLightHelper(directionalLight),
+    new THREE.CameraHelper(directionalLight.shadow.camera)
+  );
 
   //SKY
 
@@ -64,7 +67,7 @@ const initWeatherControler = (renderer, scene, gui, modelLoader) => {
       rayleigh: 3,
       mieCoefficient: 0.005,
       mieDirectionalG: 0.7,
-      elevation: 32,
+      elevation: 72,
       azimuth: 180,
       exposure: renderer.toneMappingExposure,
     };
