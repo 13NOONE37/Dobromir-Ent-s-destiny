@@ -1,11 +1,9 @@
-import { MathUtils } from './MathUtils.js';
+import * as MathUtils from './MathUtils.js';
 import { Quaternion } from './Quaternion.js';
 
 class Vector3 {
 
 	constructor( x = 0, y = 0, z = 0 ) {
-
-		Object.defineProperty( this, 'isVector3', { value: true } );
 
 		this.x = x;
 		this.y = y;
@@ -713,10 +711,35 @@ class Vector3 {
 
 	}
 
+	randomDirection() {
+
+		// Derived from https://mathworld.wolfram.com/SpherePointPicking.html
+
+		const u = ( Math.random() - 0.5 ) * 2;
+		const t = Math.random() * Math.PI * 2;
+		const f = Math.sqrt( 1 - u ** 2 );
+
+		this.x = f * Math.cos( t );
+		this.y = f * Math.sin( t );
+		this.z = u;
+
+		return this;
+
+	}
+
+	*[ Symbol.iterator ]() {
+
+		yield this.x;
+		yield this.y;
+		yield this.z;
+
+	}
+
 }
+
+Vector3.prototype.isVector3 = true;
 
 const _vector = /*@__PURE__*/ new Vector3();
 const _quaternion = /*@__PURE__*/ new Quaternion();
-
 
 export { Vector3 };

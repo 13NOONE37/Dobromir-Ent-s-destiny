@@ -1,4 +1,4 @@
-import { MathUtils } from './MathUtils.js';
+import * as MathUtils from './MathUtils.js';
 
 const _colorKeywords = { 'aliceblue': 0xF0F8FF, 'antiquewhite': 0xFAEBD7, 'aqua': 0x00FFFF, 'aquamarine': 0x7FFFD4, 'azure': 0xF0FFFF,
 	'beige': 0xF5F5DC, 'bisque': 0xFFE4C4, 'black': 0x000000, 'blanchedalmond': 0xFFEBCD, 'blue': 0x0000FF, 'blueviolet': 0x8A2BE2,
@@ -54,8 +54,6 @@ function LinearToSRGB( c ) {
 class Color {
 
 	constructor( r, g, b ) {
-
-		Object.defineProperty( this, 'isColor', { value: true } );
 
 		if ( g === undefined && b === undefined ) {
 
@@ -163,7 +161,7 @@ class Color {
 
 		let m;
 
-		if ( m = /^((?:rgb|hsl)a?)\(\s*([^\)]*)\)/.exec( style ) ) {
+		if ( m = /^((?:rgb|hsl)a?)\(([^\)]*)\)/.exec( style ) ) {
 
 			// rgb / hsl
 
@@ -176,7 +174,7 @@ class Color {
 				case 'rgb':
 				case 'rgba':
 
-					if ( color = /^(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*(\d*\.?\d+)\s*)?$/.exec( components ) ) {
+					if ( color = /^\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*(\d*\.?\d+)\s*)?$/.exec( components ) ) {
 
 						// rgb(255,0,0) rgba(255,0,0,0.5)
 						this.r = Math.min( 255, parseInt( color[ 1 ], 10 ) ) / 255;
@@ -189,7 +187,7 @@ class Color {
 
 					}
 
-					if ( color = /^(\d+)\%\s*,\s*(\d+)\%\s*,\s*(\d+)\%\s*(?:,\s*(\d*\.?\d+)\s*)?$/.exec( components ) ) {
+					if ( color = /^\s*(\d+)\%\s*,\s*(\d+)\%\s*,\s*(\d+)\%\s*(?:,\s*(\d*\.?\d+)\s*)?$/.exec( components ) ) {
 
 						// rgb(100%,0%,0%) rgba(100%,0%,0%,0.5)
 						this.r = Math.min( 100, parseInt( color[ 1 ], 10 ) ) / 100;
@@ -207,7 +205,7 @@ class Color {
 				case 'hsl':
 				case 'hsla':
 
-					if ( color = /^(\d*\.?\d+)\s*,\s*(\d+)\%\s*,\s*(\d+)\%\s*(?:,\s*(\d*\.?\d+)\s*)?$/.exec( components ) ) {
+					if ( color = /^\s*(\d*\.?\d+)\s*,\s*(\d+)\%\s*,\s*(\d+)\%\s*(?:,\s*(\d*\.?\d+)\s*)?$/.exec( components ) ) {
 
 						// hsl(120,50%,50%) hsla(120,50%,50%,0.5)
 						const h = parseFloat( color[ 1 ] ) / 360;
@@ -266,7 +264,7 @@ class Color {
 	setColorName( style ) {
 
 		// color keywords
-		const hex = _colorKeywords[ style ];
+		const hex = _colorKeywords[ style.toLowerCase() ];
 
 		if ( hex !== undefined ) {
 
@@ -389,13 +387,6 @@ class Color {
 	getHSL( target ) {
 
 		// h,s,l ranges are in 0.0 - 1.0
-
-		if ( target === undefined ) {
-
-			console.warn( 'THREE.Color: .getHSL() target is now required' );
-			target = { h: 0, s: 0, l: 0 };
-
-		}
 
 		const r = this.r, g = this.g, b = this.b;
 
@@ -524,6 +515,16 @@ class Color {
 
 	}
 
+	lerpColors( color1, color2, alpha ) {
+
+		this.r = color1.r + ( color2.r - color1.r ) * alpha;
+		this.g = color1.g + ( color2.g - color1.g ) * alpha;
+		this.b = color1.b + ( color2.b - color1.b ) * alpha;
+
+		return this;
+
+	}
+
 	lerpHSL( color, alpha ) {
 
 		this.getHSL( _hslA );
@@ -594,9 +595,10 @@ class Color {
 }
 
 Color.NAMES = _colorKeywords;
+
+Color.prototype.isColor = true;
 Color.prototype.r = 1;
 Color.prototype.g = 1;
 Color.prototype.b = 1;
-
 
 export { Color };
