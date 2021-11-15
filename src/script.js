@@ -1,13 +1,13 @@
-import "./style.css";
-import * as THREE from "three";
-import Stats from "stats.js";
-import { gsap } from "gsap";
+import './style.css';
+import * as THREE from 'three';
+import Stats from 'stats.js';
+import { gsap } from 'gsap';
 
-import initWeatherControler from "./Assets/Config/WeatherControler";
-import initLoadingManagers from "./Assets/Config/LoadingManagers";
-import initBasics from "./Assets/Config/InitBasics";
-import initInputControler from "./Assets/Config/InputControler";
-import updateAllMaterials from "./Assets/Config/UpdateAllMaterials";
+import initWeatherControler from './Assets/Config/WeatherControler';
+import initLoadingManagers from './Assets/Config/LoadingManagers';
+import initBasics from './Assets/Config/InitBasics';
+import initInputControler from './Assets/Config/InputControler';
+import updateAllMaterials from './Assets/Config/UpdateAllMaterials';
 
 /*!--Base--!*/
 
@@ -28,24 +28,24 @@ const [sunLight, sunObject, skyEffectControler, skyGuiChanged, clouds] =
 //floor
 
 const texture1 = textureLoader.load(
-  "/Assets/Enviorment/Thumbnails/Terrain_Alpha (3).jpg"
+  '/Assets/Enviorment/Thumbnails/Terrain_Alpha (3).jpg',
 );
 
 const texture2 = textureLoader.load(
-  "/Assets/Enviorment/Thumbnails/AmbientOcclusionMap.jpg"
+  '/Assets/Enviorment/Thumbnails/AmbientOcclusionMap.jpg',
 );
 const texture3 = textureLoader.load(
-  "/Assets/Enviorment/Thumbnails/NormalMap.jpg"
+  '/Assets/Enviorment/Thumbnails/NormalMap.jpg',
 );
 const texture4 = textureLoader.load(
-  "/Assets/Enviorment/Thumbnails/SpecularMap.jpg"
+  '/Assets/Enviorment/Thumbnails/SpecularMap.jpg',
 );
 
-const groundAmbient = textureLoader.load("/Assets/Dirt/Ambient.jpg");
-const groundDisplacment = textureLoader.load("/Assets/Dirt/Displacment.jpg");
-const groundNormal = textureLoader.load("/Assets/Dirt/Normal.jpg");
-const groundBaseColor = textureLoader.load("/Assets/Dirt/BaseColor.jpg");
-const groundBump = textureLoader.load("/Assets/Dirt/Bump.jpg");
+const groundAmbient = textureLoader.load('/Assets/Dirt/Ambient.jpg');
+const groundDisplacment = textureLoader.load('/Assets/Dirt/Displacment.jpg');
+const groundNormal = textureLoader.load('/Assets/Dirt/Normal.jpg');
+const groundBaseColor = textureLoader.load('/Assets/Dirt/BaseColor.jpg');
+const groundBump = textureLoader.load('/Assets/Dirt/Bump.jpg');
 
 const wrapValue = 256;
 
@@ -71,7 +71,7 @@ groundBump.repeat.set(wrapValue, wrapValue);
 
 const floorGeometry = new THREE.PlaneBufferGeometry(2500, 2500, 1024, 1024);
 const floorMaterial = new THREE.MeshStandardMaterial({
-  color: new THREE.Color("#aaa"),
+  color: new THREE.Color('#aaa'),
   aoMap: groundAmbient,
   displacementMap: groundDisplacment,
   displacementScale: 1.05,
@@ -89,8 +89,8 @@ floor.castShadow = true;
 floor.receiveShadow = true;
 
 floor.geometry.setAttribute(
-  "uv2",
-  new THREE.BufferAttribute(floor.geometry.attributes.uv.array, 2)
+  'uv2',
+  new THREE.BufferAttribute(floor.geometry.attributes.uv.array, 2),
 );
 scene.add(floor);
 
@@ -126,7 +126,7 @@ const initForest = (treeBase) => {
   updateAllMaterials(scene, enviormentMapTexture);
 };
 
-modelLoader.load("/Assets/Enviorment/Tree11.glb", (tree) => {
+modelLoader.load('/Assets/Enviorment/Tree11.glb', (tree) => {
   initForest(tree.scene.children[0]);
 });
 
@@ -134,7 +134,7 @@ let mixer = null;
 let czesioWalkAction = null;
 let czesio = null;
 
-modelLoader.load("/Assets/Characters/czesioCopy.glb", (model) => {
+modelLoader.load('/Assets/Characters/czesioCopy.glb', (model) => {
   czesio = model.scene.children[0];
 
   czesio.position.y = -0.1;
@@ -163,13 +163,13 @@ const cameraDebug = {
   offsetY: 15,
   offsetZ: -20,
 };
-const cameraFolder = gui.addFolder("Camera");
-cameraFolder.add(cameraDebug, "lookX").min(0).max(100).name("lookX");
-cameraFolder.add(cameraDebug, "lookY").min(0).max(100).name("lookY");
-cameraFolder.add(cameraDebug, "lookZ").min(0).max(100).name("lookZ");
-cameraFolder.add(cameraDebug, "offsetX").min(0).max(100).name("offsetX");
-cameraFolder.add(cameraDebug, "offsetY").min(0).max(100).name("offsetY");
-cameraFolder.add(cameraDebug, "offsetZ").min(-50).max(100).name("offsetZ");
+const cameraFolder = gui.addFolder('Camera');
+cameraFolder.add(cameraDebug, 'lookX').min(0).max(100).name('lookX');
+cameraFolder.add(cameraDebug, 'lookY').min(0).max(100).name('lookY');
+cameraFolder.add(cameraDebug, 'lookZ').min(0).max(100).name('lookZ');
+cameraFolder.add(cameraDebug, 'offsetX').min(0).max(100).name('offsetX');
+cameraFolder.add(cameraDebug, 'offsetY').min(0).max(100).name('offsetY');
+cameraFolder.add(cameraDebug, 'offsetZ').min(-50).max(100).name('offsetZ');
 
 //Camera control funciton
 const thirdPersonCamera = () => {
@@ -177,7 +177,7 @@ const thirdPersonCamera = () => {
     const idealOffset = new THREE.Vector3(
       cameraDebug.offsetX,
       cameraDebug.offsetY,
-      cameraDebug.offsetZ
+      cameraDebug.offsetZ,
     );
     idealOffset.applyQuaternion(czesio.quaternion);
     idealOffset.add(czesio.position);
@@ -188,7 +188,7 @@ const thirdPersonCamera = () => {
     const idealLookAt = new THREE.Vector3(
       cameraDebug.lookX,
       cameraDebug.lookY,
-      cameraDebug.lookZ
+      cameraDebug.lookZ,
     );
     idealLookAt.applyQuaternion(czesio.quaternion);
     idealLookAt.add(czesio.position);
