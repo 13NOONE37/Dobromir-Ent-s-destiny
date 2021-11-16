@@ -10,7 +10,6 @@ import initInputControler from './Assets/Config/InputControler';
 import updateAllMaterials from './Assets/Config/UpdateAllMaterials';
 
 /*!--Base--!*/
-
 //Init basics
 const [renderer, camera, controls, scene, gui] = initBasics();
 const [textureLoader, cubeTextureLoader, modelLoader, enviormentMapTexture] =
@@ -64,7 +63,6 @@ groundNormal.repeat.set(wrapValue, wrapValue);
 groundBaseColor.wrapS = THREE.RepeatWrapping;
 groundBaseColor.wrapT = THREE.RepeatWrapping;
 groundBaseColor.repeat.set(wrapValue, wrapValue);
-
 groundBump.wrapS = THREE.RepeatWrapping;
 groundBump.wrapT = THREE.RepeatWrapping;
 groundBump.repeat.set(wrapValue, wrapValue);
@@ -83,10 +81,6 @@ const floorMaterial = new THREE.MeshStandardMaterial({
 
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
 floor.rotateX(-Math.PI * 0.5);
-
-//delete it
-floor.castShadow = true;
-floor.receiveShadow = true;
 
 floor.geometry.setAttribute(
   'uv2',
