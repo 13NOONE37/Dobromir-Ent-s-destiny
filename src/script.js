@@ -215,7 +215,7 @@ const tick = () => {
   mixer && mixer.update(deltaTime);
 
   //Sun update
-  skyEffectControler.elevation = (currentTime % 180) + 1; //Original skyEffectControler.elevation = ((currentTime / 50) % 180) + 1;
+  skyEffectControler.elevation = ((currentTime / 50) % 180) + 1;
   skyGuiChanged();
   sunLight.position.x = sunObject.x * 100;
   sunLight.position.y = sunObject.y * 100; //Original 1000
@@ -247,9 +247,6 @@ const tick = () => {
     czesio.rotation.y -= 0.05;
   }
   if (keys.space) {
-    gsap
-      .from(czesio.position, { duration: 1, y: 2 })
-      .to(czesio.position, { duration: 1, y: 0 });
   }
   // console.log(
   //   "Może Lepiej zrealizować te funkcje poprzez wysyłanie postaci aktualnie grywalnej do kontrolera i poruszania przez gsap"
