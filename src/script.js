@@ -74,11 +74,11 @@ const floorMaterial = new THREE.MeshStandardMaterial({
   color: new THREE.Color('#aaa'),
   aoMap: groundAmbient,
   displacementMap: groundDisplacment,
-  displacementScale: 1.05,
+  displacementScale: 1.1,
   normalMap: groundNormal,
   map: groundBaseColor,
   bumpMap: groundBump,
-  bumpScale: 1.05,
+  bumpScale: 1.1,
 });
 
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
