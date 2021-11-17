@@ -151,11 +151,11 @@ let currentTime = 0;
 const cameraDebug = {
   lookX: 0,
   lookY: 0,
-  lookZ: 100,
+  lookZ: 15,
 
   offsetX: 0,
-  offsetY: 15,
-  offsetZ: -20,
+  offsetY: 6,
+  offsetZ: -8,
 };
 const cameraFolder = gui.addFolder('Camera');
 cameraFolder.add(cameraDebug, 'lookX').min(0).max(100).name('lookX');
@@ -234,11 +234,11 @@ const tick = () => {
   }
   if (keys.left) {
     // czesio.position.x += 0.1;
-    czesio.rotation.y += 0.05;
+    czesio.rotation.y += 0.035;
   }
   if (keys.right) {
     // czesio.position.x -= 0.1;
-    czesio.rotation.y -= 0.05;
+    czesio.rotation.y -= 0.035;
   }
   if (keys.space) {
   }
