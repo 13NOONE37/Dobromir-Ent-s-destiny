@@ -2,12 +2,12 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import * as THREE from 'three';
 import updateAllMaterials from './UpdateAllMaterials';
 
-const initLoadingManagers = (scene, isLoaded) => {
+const initLoadingManagers = (scene, tick) => {
   const loaderManager = new THREE.LoadingManager(
     () => {
       console.log('load');
       updateAllMaterials(scene, enviormentMapTexture);
-      isLoaded += 1;
+      tick();
     },
     () => {
       console.log('progress');

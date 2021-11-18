@@ -9,22 +9,131 @@ import initLoadingManagers from './Assets/Config/LoadingManagers';
 import initBasics from './Assets/Config/InitBasics';
 import initInputControler from './Assets/Config/InputControler';
 import updateAllMaterials from './Assets/Config/UpdateAllMaterials';
+import GenerateGround from './Assets/Enviorment/GenerateGround';
+
+const [renderer, camera, controls, scene, gui] = initBasics();
+//Animate
+let stats = new Stats();
+stats.showPanel(0);
+document.body.appendChild(stats.dom);
+
+const clock = new THREE.Clock();
+let currentTime = 0;
+
+const cameraDebug = {
+  lookX: 0,
+  lookY: 0,
+  lookZ: 15,
+
+  offsetX: 0,
+  offsetY: 5,
+  offsetZ: -7,
+};
+const cameraFolder = gui.addFolder('Camera');
+cameraFolder.add(cameraDebug, 'lookX').min(-100).max(100).name('lookX');
+cameraFolder.add(cameraDebug, 'lookY').min(-100).max(100).name('lookY');
+cameraFolder.add(cameraDebug, 'lookZ').min(-100).max(100).name('lookZ');
+cameraFolder.add(cameraDebug, 'offsetX').min(-100).max(100).name('offsetX');
+cameraFolder.add(cameraDebug, 'offsetY').min(-100).max(100).name('offsetY');
+cameraFolder.add(cameraDebug, 'offsetZ').min(-100).max(100).name('offsetZ');
+
+//Camera control funciton
+let currentControlObject = null;
+const thirdPersonCamera = () => {
+  const calculateIdealOffset = () => {
+    const idealOffset = new THREE.Vector3(
+      cameraDebug.offsetX,
+      cameraDebug.offsetY,
+      cameraDebug.offsetZ,
+    );
+    idealOffset.applyQuaternion(currentControlObject.quaternion);
+    idealOffset.add(currentControlObject.position);
+
+    return idealOffset;
+  };
+  const calculateIdealLookAt = () => {
+    const idealLookAt = new THREE.Vector3(
+      cameraDebug.lookX,
+      cameraDebug.lookY,
+      cameraDebug.lookZ,
+    );
+    idealLookAt.applyQuaternion(currentControlObject.quaternion);
+    idealLookAt.add(currentControlObject.position);
+
+    return idealLookAt;
+  };
+
+  const idealOffset = calculateIdealOffset();
+  const idealLookAt = calculateIdealLookAt();
+
+  camera.position.copy(idealOffset);
+  camera.lookAt(idealLookAt);
+};
+const renderBasic = () => {
+  renderer.render(scene, camera);
+};
+const objectControler = () => {
+  if (keys.forward) {
+    sunLight.lookAt(czesio.position);
+    czesio.translateOnAxis(new THREE.Vector3(0, 0, 1), 0.1);
+    czesioWalkAction.play();
+  }
+  if (czesioWalkAction && !keys.forward && !keys.backward) {
+    czesioWalkAction.stop();
+  }
+
+  if (keys.backward) {
+    czesio.translateOnAxis(new THREE.Vector3(0, 0, -1), 0.1);
+    czesioWalkAction.play();
+  }
+  if (keys.left) {
+    // czesio.position.x += 0.1;
+    czesio.rotation.y += 0.035;
+  }
+  if (keys.right) {
+    // czesio.position.x -= 0.1;
+    czesio.rotation.y -= 0.035;
+  }
+  if (keys.space) {
+  }
+  //Może Lepiej zrealizować te funkcje poprzez wysyłanie postaci aktualnie grywalnej do kontrolera i poruszania przez gsap
+};
+const updateEnviorment = (currentTime) => {
+  //Sun update
+  skyEffectControler.elevation = ((currentTime / 50) % 180) + 1;
+  skyGuiChanged();
+  sunLight.position.x = sunObject.x * 100;
+  sunLight.position.y = sunObject.y * 100; //Original 1000
+  sunLight.position.z = sunObject.z * 100;
+};
+
+const tick = () => {
+  stats.begin();
+  const elapsedTime = clock.getElapsedTime();
+  const deltaTime = elapsedTime - currentTime;
+  currentTime = elapsedTime;
+
+  //Update
+  controls.update();
+  mixer && mixer.update(deltaTime);
+
+  currentControlObject && thirdPersonCamera();
+  updateEnviorment(currentTime);
+  objectControler();
+  renderBasic();
+  stats.end();
+  //Call tick again on next frame
+  window.requestAnimationFrame(tick);
+};
 
 /*!--Base--!*/
-//Init basics
-let isLoaded = 0;
-const [renderer, camera, controls, scene, gui] = initBasics();
 const [textureLoader, cubeTextureLoader, modelLoader, enviormentMapTexture] =
-  initLoadingManagers(scene, isLoaded);
-
-//Control keyboard & mouse
-const keys = initInputControler();
-
-//Init lights
-// const [sunLight, sunObject] = initWeatherControler(scene, gui);
+  initLoadingManagers(scene, tick);
 const [sunLight, sunObject, skyEffectControler, skyGuiChanged, clouds] =
   initWeatherControler(renderer, scene, gui, modelLoader);
+const keys = initInputControler();
 
+/*!---Content--! */
 //Init physics
 
 let collisionConfiguration;
@@ -46,7 +155,8 @@ const maxNumObjects = 30;
 const init = () => {
   setupPhysics();
   setupGraphics();
-  isLoaded == 1 && tick();
+
+  tick();
 };
 const setupPhysics = () => {
   let collisionConfiguration = new Ammo.btDefaultCollisionConfiguration(),
@@ -89,70 +199,7 @@ const setupGraphics = () => {};
 
 Ammo().then(init);
 
-//!--test
-//floor
-const texture1 = textureLoader.load(
-  '/Assets/Enviorment/Thumbnails/Terrain_Alpha (3).jpg',
-);
-
-const texture2 = textureLoader.load(
-  '/Assets/Enviorment/Thumbnails/AmbientOcclusionMap.jpg',
-);
-const texture3 = textureLoader.load(
-  '/Assets/Enviorment/Thumbnails/NormalMap.jpg',
-);
-const texture4 = textureLoader.load(
-  '/Assets/Enviorment/Thumbnails/SpecularMap.jpg',
-);
-
-const groundAmbient = textureLoader.load('/Assets/Dirt/Ambient.jpg');
-const groundDisplacment = textureLoader.load('/Assets/Dirt/Displacment.jpg');
-const groundNormal = textureLoader.load('/Assets/Dirt/Normal.jpg');
-const groundBaseColor = textureLoader.load('/Assets/Dirt/BaseColor.jpg');
-const groundBump = textureLoader.load('/Assets/Dirt/Bump.jpg');
-
-const wrapValue = 256;
-
-groundAmbient.wrapS = THREE.RepeatWrapping;
-groundAmbient.wrapT = THREE.RepeatWrapping;
-groundAmbient.repeat.set(wrapValue, wrapValue);
-
-groundDisplacment.wrapS = THREE.RepeatWrapping;
-groundDisplacment.wrapT = THREE.RepeatWrapping;
-groundDisplacment.repeat.set(wrapValue, wrapValue);
-
-groundNormal.wrapS = THREE.RepeatWrapping;
-groundNormal.wrapT = THREE.RepeatWrapping;
-groundNormal.repeat.set(wrapValue, wrapValue);
-
-groundBaseColor.wrapS = THREE.RepeatWrapping;
-groundBaseColor.wrapT = THREE.RepeatWrapping;
-groundBaseColor.repeat.set(wrapValue, wrapValue);
-groundBump.wrapS = THREE.RepeatWrapping;
-groundBump.wrapT = THREE.RepeatWrapping;
-groundBump.repeat.set(wrapValue, wrapValue);
-
-const floorGeometry = new THREE.PlaneBufferGeometry(2500, 2500, 1024, 1024);
-const floorMaterial = new THREE.MeshStandardMaterial({
-  color: new THREE.Color('#aaa'),
-  aoMap: groundAmbient,
-  displacementMap: groundDisplacment,
-  displacementScale: 1.1,
-  normalMap: groundNormal,
-  map: groundBaseColor,
-  bumpMap: groundBump,
-  bumpScale: 1.1,
-});
-
-const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-floor.rotateX(-Math.PI * 0.5);
-
-floor.geometry.setAttribute(
-  'uv2',
-  new THREE.BufferAttribute(floor.geometry.attributes.uv.array, 2),
-);
-scene.add(floor);
-
+GenerateGround(textureLoader, scene);
 //forest
 const initForest = (treeBase) => {
   const forest = new THREE.Group();
@@ -195,6 +242,7 @@ let czesio = null;
 
 modelLoader.load('/Assets/Characters/czesioCopy.glb', (model) => {
   czesio = model.scene.children[0];
+  currentControlObject = czesio;
 
   czesio.position.y = -0.1;
 
@@ -204,119 +252,3 @@ modelLoader.load('/Assets/Characters/czesioCopy.glb', (model) => {
 
   czesioWalkAction = mixer.clipAction(model.animations[3]);
 });
-
-//Animate
-let stats = new Stats();
-stats.showPanel(0);
-document.body.appendChild(stats.dom);
-
-const clock = new THREE.Clock();
-let currentTime = 0;
-
-const cameraDebug = {
-  lookX: 0,
-  lookY: 0,
-  lookZ: 15,
-
-  offsetX: 0,
-  offsetY: 5,
-  offsetZ: -7,
-};
-const cameraFolder = gui.addFolder('Camera');
-cameraFolder.add(cameraDebug, 'lookX').min(-100).max(100).name('lookX');
-cameraFolder.add(cameraDebug, 'lookY').min(-100).max(100).name('lookY');
-cameraFolder.add(cameraDebug, 'lookZ').min(-100).max(100).name('lookZ');
-cameraFolder.add(cameraDebug, 'offsetX').min(-100).max(100).name('offsetX');
-cameraFolder.add(cameraDebug, 'offsetY').min(-100).max(100).name('offsetY');
-cameraFolder.add(cameraDebug, 'offsetZ').min(-100).max(100).name('offsetZ');
-
-//Camera control funciton
-const thirdPersonCamera = () => {
-  const calculateIdealOffset = () => {
-    const idealOffset = new THREE.Vector3(
-      cameraDebug.offsetX,
-      cameraDebug.offsetY,
-      cameraDebug.offsetZ,
-    );
-    idealOffset.applyQuaternion(czesio.quaternion);
-    idealOffset.add(czesio.position);
-
-    return idealOffset;
-  };
-  const calculateIdealLookAt = () => {
-    const idealLookAt = new THREE.Vector3(
-      cameraDebug.lookX,
-      cameraDebug.lookY,
-      cameraDebug.lookZ,
-    );
-    idealLookAt.applyQuaternion(czesio.quaternion);
-    idealLookAt.add(czesio.position);
-
-    return idealLookAt;
-  };
-
-  const idealOffset = calculateIdealOffset();
-  const idealLookAt = calculateIdealLookAt();
-
-  camera.position.copy(idealOffset);
-  camera.lookAt(idealLookAt);
-};
-
-const renderBasic = () => {
-  thirdPersonCamera();
-
-  renderer.render(scene, camera);
-};
-
-const tick = () => {
-  stats.begin();
-  const elapsedTime = clock.getElapsedTime();
-  const deltaTime = elapsedTime - currentTime;
-  currentTime = elapsedTime;
-
-  //Update controls
-  controls.update();
-  //Update mixer
-  mixer && mixer.update(deltaTime);
-
-  //Sun update
-  skyEffectControler.elevation = ((currentTime / 50) % 180) + 1;
-  skyGuiChanged();
-  sunLight.position.x = sunObject.x * 100;
-  sunLight.position.y = sunObject.y * 100; //Original 1000
-  sunLight.position.z = sunObject.z * 100;
-
-  //Move character
-  if (keys.forward) {
-    sunLight.lookAt(czesio.position);
-    czesio.translateOnAxis(new THREE.Vector3(0, 0, 1), 0.1);
-    czesioWalkAction.play();
-  }
-  if (czesioWalkAction && !keys.forward && !keys.backward) {
-    czesioWalkAction.stop();
-  }
-
-  if (keys.backward) {
-    czesio.translateOnAxis(new THREE.Vector3(0, 0, -1), 0.1);
-    czesioWalkAction.play();
-  }
-  if (keys.left) {
-    // czesio.position.x += 0.1;
-    czesio.rotation.y += 0.035;
-  }
-  if (keys.right) {
-    // czesio.position.x -= 0.1;
-    czesio.rotation.y -= 0.035;
-  }
-  if (keys.space) {
-  }
-  // console.log(
-  //   "Może Lepiej zrealizować te funkcje poprzez wysyłanie postaci aktualnie grywalnej do kontrolera i poruszania przez gsap"
-  // );
-
-  renderBasic();
-
-  stats.end();
-  //Call tick again on next frame
-  window.requestAnimationFrame(tick);
-};
