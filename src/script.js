@@ -2,6 +2,7 @@ import './style.css';
 import * as THREE from 'three';
 import Stats from 'stats.js';
 import { gsap } from 'gsap';
+import Ammo from 'ammo.js/builds/ammo';
 
 import initWeatherControler from './Assets/Config/WeatherControler';
 import initLoadingManagers from './Assets/Config/LoadingManagers';
@@ -22,10 +23,11 @@ const keys = initInputControler();
 // const [sunLight, sunObject] = initWeatherControler(scene, gui);
 const [sunLight, sunObject, skyEffectControler, skyGuiChanged, clouds] =
   initWeatherControler(renderer, scene, gui, modelLoader);
-//Test
 
+//Init physics
+
+//!--test
 //floor
-
 const texture1 = textureLoader.load(
   '/Assets/Enviorment/Thumbnails/Terrain_Alpha (3).jpg',
 );
