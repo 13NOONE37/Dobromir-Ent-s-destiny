@@ -1,31 +1,32 @@
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import * as THREE from "three";
-import updateAllMaterials from "./UpdateAllMaterials";
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import * as THREE from 'three';
+import updateAllMaterials from './UpdateAllMaterials';
 
-const initLoadingManagers = (scene) => {
+const initLoadingManagers = (scene, isLoaded) => {
   const loaderManager = new THREE.LoadingManager(
     () => {
-      console.log("load");
+      console.log('load');
       updateAllMaterials(scene, enviormentMapTexture);
+      isLoaded += 1;
     },
     () => {
-      console.log("progress");
+      console.log('progress');
     },
     () => {
-      console.log("error");
-    }
+      console.log('error');
+    },
   );
   const textureLoader = new THREE.TextureLoader(loaderManager);
   const cubeTextureLoader = new THREE.CubeTextureLoader(loaderManager);
   const modelLoader = new GLTFLoader(loaderManager);
 
   const enviormentMapTexture = cubeTextureLoader.load([
-    "/Assets/Enviorment/px.png",
-    "/Assets/Enviorment/nx.png",
-    "/Assets/Enviorment/py.png",
-    "/Assets/Enviorment/ny.png",
-    "/Assets/Enviorment/pz.png",
-    "/Assets/Enviorment/nz.png",
+    '/Assets/Enviorment/px.png',
+    '/Assets/Enviorment/nx.png',
+    '/Assets/Enviorment/py.png',
+    '/Assets/Enviorment/ny.png',
+    '/Assets/Enviorment/pz.png',
+    '/Assets/Enviorment/nz.png',
   ]);
   enviormentMapTexture.encoding = THREE.sRGBEncoding;
   scene.environment = enviormentMapTexture;

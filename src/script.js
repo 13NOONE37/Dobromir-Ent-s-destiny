@@ -12,9 +12,10 @@ import updateAllMaterials from './Assets/Config/UpdateAllMaterials';
 
 /*!--Base--!*/
 //Init basics
+let isLoaded = 0;
 const [renderer, camera, controls, scene, gui] = initBasics();
 const [textureLoader, cubeTextureLoader, modelLoader, enviormentMapTexture] =
-  initLoadingManagers(scene);
+  initLoadingManagers(scene, isLoaded);
 
 //Control keyboard & mouse
 const keys = initInputControler();
@@ -25,6 +26,68 @@ const [sunLight, sunObject, skyEffectControler, skyGuiChanged, clouds] =
   initWeatherControler(renderer, scene, gui, modelLoader);
 
 //Init physics
+
+let collisionConfiguration;
+let dispatcher;
+let broadphase;
+let solver;
+let physicsWorld;
+const dynamicObjects = [];
+let transformAux1;
+
+let heightData = null;
+let ammoHeightData = null;
+
+let time = 0;
+const objectTimePeriod = 3;
+let timeNextSpawn = time + objectTimePeriod;
+const maxNumObjects = 30;
+
+const init = () => {
+  setupPhysics();
+  setupGraphics();
+  isLoaded == 1 && tick();
+};
+const setupPhysics = () => {
+  let collisionConfiguration = new Ammo.btDefaultCollisionConfiguration(),
+    dispatcher = new Ammo.btCollisionDispatcher(collisionConfiguration),
+    overlappingPairCache = new Ammo.btDbvtBroadphase(),
+    solver = new Ammo.btSequentialImpulseConstraintSolver();
+
+  physicsWolrd = new Ammo.btDiscreteDynamicsWorld(
+    dispatcher,
+    overlappingPairCache,
+    solver,
+    collisionConfiguration,
+  );
+  physicsWolrd.setGravity(new Ammo.btVector3(0, -10, 0));
+
+  //create terrain
+  const groundShape = createGround();
+  const groundTransform = new Ammo.btTransform();
+  groundTransform.setIdentity();
+
+  groundTransform.setOrigin(
+    new Ammo.btVector3(0, (terrainMaxHeight + terrainMinHeight) / 2, 0),
+  );
+  const groundMass = 0;
+  const groundLocalInteria = new Ammo.btVector3(0, 0, 0);
+  const groundMotionState = new Ammo.btDefaultMotionState(groundTransform);
+  const groundBody = new Ammo.btRigidBody(
+    new Ammo.btRigidBodyConstructionInfo(
+      groundMass,
+      groundMotionState,
+      groundShape,
+      groundLocalInteria,
+    ),
+  );
+  physicsWolrd.addRigidBody(groundBody);
+
+  transformAux1 = new Ammo.btTransform();
+};
+const setupGraphics = () => {};
+
+Ammo().then(init);
 
 //!--test
 //floor
@@ -156,16 +219,16 @@ const cameraDebug = {
   lookZ: 15,
 
   offsetX: 0,
-  offsetY: 6,
-  offsetZ: -8,
+  offsetY: 5,
+  offsetZ: -7,
 };
 const cameraFolder = gui.addFolder('Camera');
-cameraFolder.add(cameraDebug, 'lookX').min(0).max(100).name('lookX');
-cameraFolder.add(cameraDebug, 'lookY').min(0).max(100).name('lookY');
-cameraFolder.add(cameraDebug, 'lookZ').min(0).max(100).name('lookZ');
-cameraFolder.add(cameraDebug, 'offsetX').min(0).max(100).name('offsetX');
-cameraFolder.add(cameraDebug, 'offsetY').min(0).max(100).name('offsetY');
-cameraFolder.add(cameraDebug, 'offsetZ').min(-50).max(100).name('offsetZ');
+cameraFolder.add(cameraDebug, 'lookX').min(-100).max(100).name('lookX');
+cameraFolder.add(cameraDebug, 'lookY').min(-100).max(100).name('lookY');
+cameraFolder.add(cameraDebug, 'lookZ').min(-100).max(100).name('lookZ');
+cameraFolder.add(cameraDebug, 'offsetX').min(-100).max(100).name('offsetX');
+cameraFolder.add(cameraDebug, 'offsetY').min(-100).max(100).name('offsetY');
+cameraFolder.add(cameraDebug, 'offsetZ').min(-100).max(100).name('offsetZ');
 
 //Camera control funciton
 const thirdPersonCamera = () => {
@@ -199,6 +262,12 @@ const thirdPersonCamera = () => {
   camera.lookAt(idealLookAt);
 };
 
+const renderBasic = () => {
+  thirdPersonCamera();
+
+  renderer.render(scene, camera);
+};
+
 const tick = () => {
   stats.begin();
   const elapsedTime = clock.getElapsedTime();
@@ -216,9 +285,6 @@ const tick = () => {
   sunLight.position.x = sunObject.x * 100;
   sunLight.position.y = sunObject.y * 100; //Original 1000
   sunLight.position.z = sunObject.z * 100;
-
-  // czesio && thirdPersonCamera();
-  //Clouds
 
   //Move character
   if (keys.forward) {
@@ -248,11 +314,9 @@ const tick = () => {
   //   "Może Lepiej zrealizować te funkcje poprzez wysyłanie postaci aktualnie grywalnej do kontrolera i poruszania przez gsap"
   // );
 
-  //Render
-  renderer.render(scene, camera);
+  renderBasic();
 
   stats.end();
   //Call tick again on next frame
   window.requestAnimationFrame(tick);
 };
-tick();
