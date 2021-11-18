@@ -73,23 +73,23 @@ const initInputControler = () => {
   };
 
   //!--!-Keyboard
-  window.addEventListener("keydown", handleKeyDown);
-  window.addEventListener("keyup", handleKeyUp);
+  window.addEventListener('keydown', handleKeyDown);
+  window.addEventListener('keyup', handleKeyUp);
 
   //!--!-Mouse
-  window.addEventListener("click", (e) => {
+  window.addEventListener('click', (e) => {
     e.preventDefault();
-    e.stopPropagation();
+    // e.stopPropagation();
     // console.log("mouse click", e);
   });
-  window.addEventListener("mousewheel", (e) => {
+  window.addEventListener('mousewheel', (e) => {
     e.preventDefault();
-    e.stopPropagation();
+    // e.stopPropagation();
     // console.log("mouse wheel", e);
   });
-  window.addEventListener("contextmenu", (e) => {
+  window.addEventListener('contextmenu', (e) => {
     e.preventDefault();
-    e.stopPropagation();
+    // e.stopPropagation();
     // console.log("contextmenu", e);
   });
 

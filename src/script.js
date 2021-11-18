@@ -138,8 +138,9 @@ const keys = initInputControler();
 
 let collisionConfiguration;
 let dispatcher;
-let broadphase;
+let overlappingPairCache;
 let solver;
+let broadphase;
 let physicsWorld;
 const dynamicObjects = [];
 let transformAux1;
@@ -159,10 +160,10 @@ const init = () => {
   tick();
 };
 const setupPhysics = () => {
-  let collisionConfiguration = new Ammo.btDefaultCollisionConfiguration(),
-    dispatcher = new Ammo.btCollisionDispatcher(collisionConfiguration),
-    overlappingPairCache = new Ammo.btDbvtBroadphase(),
-    solver = new Ammo.btSequentialImpulseConstraintSolver();
+  (collisionConfiguration = new Ammo.btDefaultCollisionConfiguration()),
+    (dispatcher = new Ammo.btCollisionDispatcher(collisionConfiguration)),
+    (overlappingPairCache = new Ammo.btDbvtBroadphase()),
+    (solver = new Ammo.btSequentialImpulseConstraintSolver());
 
   physicsWolrd = new Ammo.btDiscreteDynamicsWorld(
     dispatcher,
@@ -170,7 +171,7 @@ const setupPhysics = () => {
     solver,
     collisionConfiguration,
   );
-  physicsWolrd.setGravity(new Ammo.btVector3(0, -10, 0));
+  physicsWolrd.setGravity(new Ammo.btVector3(0, -9.8, 0));
 
   //create terrain
   const groundShape = createGround();
