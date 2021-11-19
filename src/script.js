@@ -12,6 +12,7 @@ import updateAllMaterials from './Assets/Config/UpdateAllMaterials';
 import GenerateGround from './Assets/Enviorment/GenerateGround';
 
 const [renderer, camera, controls, scene, gui] = initBasics();
+
 //Animate
 let stats = new Stats();
 stats.showPanel(0);
@@ -20,6 +21,7 @@ document.body.appendChild(stats.dom);
 const clock = new THREE.Clock();
 let currentTime = 0;
 
+//Camera
 const cameraDebug = {
   lookX: 0,
   lookY: 0,
@@ -36,9 +38,6 @@ cameraFolder.add(cameraDebug, 'lookZ').min(-100).max(100).name('lookZ');
 cameraFolder.add(cameraDebug, 'offsetX').min(-100).max(100).name('offsetX');
 cameraFolder.add(cameraDebug, 'offsetY').min(-100).max(100).name('offsetY');
 cameraFolder.add(cameraDebug, 'offsetZ').min(-100).max(100).name('offsetZ');
-
-const duration = 0.5;
-//Camera control funciton
 let currentControlObject = null;
 const thirdPersonCamera = () => {
   const calculateIdealOffset = () => {
@@ -70,6 +69,7 @@ const thirdPersonCamera = () => {
   camera.position.copy(idealOffset);
   camera.lookAt(idealLookAt);
 };
+
 const renderBasic = () => {
   renderer.render(scene, camera);
 };
@@ -102,7 +102,13 @@ const objectControler = () => {
   }
   //Może Lepiej zrealizować te funkcje poprzez wysyłanie postaci aktualnie grywalnej do kontrolera i poruszania przez gsap
 };
-const updateEnviorment = (currentTime) => {
+const updateEnviorment = (currentTime, deltaTime) => {
+  //Update
+  controls.update();
+  mixer && mixer.update(deltaTime);
+
+  currentControlObject && thirdPersonCamera();
+
   //Sun update
   skyEffectControler.elevation = ((currentTime / 50) % 180) + 1;
   skyGuiChanged();
@@ -110,23 +116,17 @@ const updateEnviorment = (currentTime) => {
   sunLight.position.y = sunObject.y * 100; //Original 1000
   sunLight.position.z = sunObject.z * 100;
 };
-
 const tick = () => {
   stats.begin();
   const elapsedTime = clock.getElapsedTime();
   const deltaTime = elapsedTime - currentTime;
   currentTime = elapsedTime;
 
-  //Update
-  controls.update();
-  mixer && mixer.update(deltaTime);
-
-  currentControlObject && thirdPersonCamera();
-  updateEnviorment(currentTime);
   objectControler();
-  renderBasic();
+  updateEnviorment(currentTime, deltaTime);
+  renderBasic(deltaTime);
+
   stats.end();
-  //Call tick again on next frame
   window.requestAnimationFrame(tick);
 };
 
@@ -138,69 +138,10 @@ const [sunLight, sunObject, skyEffectControler, skyGuiChanged, clouds] =
 const keys = initInputControler();
 
 /*!---Content--! */
-//Init physics
-
-let collisionConfiguration;
-let dispatcher;
-let overlappingPairCache;
-let solver;
-let broadphase;
-let physicsWorld;
-const dynamicObjects = [];
-let transformAux1;
-
-let heightData = null;
-let ammoHeightData = null;
-
-let time = 0;
-const objectTimePeriod = 3;
-let timeNextSpawn = time + objectTimePeriod;
-const maxNumObjects = 30;
 
 const init = () => {
-  setupPhysics();
-  setupGraphics();
-
   tick();
 };
-const setupPhysics = () => {
-  (collisionConfiguration = new Ammo.btDefaultCollisionConfiguration()),
-    (dispatcher = new Ammo.btCollisionDispatcher(collisionConfiguration)),
-    (overlappingPairCache = new Ammo.btDbvtBroadphase()),
-    (solver = new Ammo.btSequentialImpulseConstraintSolver());
-
-  physicsWolrd = new Ammo.btDiscreteDynamicsWorld(
-    dispatcher,
-    overlappingPairCache,
-    solver,
-    collisionConfiguration,
-  );
-  physicsWolrd.setGravity(new Ammo.btVector3(0, -9.8, 0));
-
-  //create terrain
-  const groundShape = createGround();
-  const groundTransform = new Ammo.btTransform();
-  groundTransform.setIdentity();
-
-  groundTransform.setOrigin(
-    new Ammo.btVector3(0, (terrainMaxHeight + terrainMinHeight) / 2, 0),
-  );
-  const groundMass = 0;
-  const groundLocalInteria = new Ammo.btVector3(0, 0, 0);
-  const groundMotionState = new Ammo.btDefaultMotionState(groundTransform);
-  const groundBody = new Ammo.btRigidBody(
-    new Ammo.btRigidBodyConstructionInfo(
-      groundMass,
-      groundMotionState,
-      groundShape,
-      groundLocalInteria,
-    ),
-  );
-  physicsWolrd.addRigidBody(groundBody);
-
-  transformAux1 = new Ammo.btTransform();
-};
-const setupGraphics = () => {};
 
 Ammo().then(init);
 

@@ -7,7 +7,7 @@ const initLoadingManagers = (scene, tick) => {
     () => {
       console.log('load');
       updateAllMaterials(scene, enviormentMapTexture);
-      tick();
+      // tick();
     },
     () => {
       console.log('progress');
