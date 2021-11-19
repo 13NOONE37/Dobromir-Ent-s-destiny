@@ -79,17 +79,14 @@ const initInputControler = () => {
   //!--!-Mouse
   window.addEventListener('click', (e) => {
     e.preventDefault();
-    // e.stopPropagation();
     // console.log("mouse click", e);
   });
   window.addEventListener('mousewheel', (e) => {
     e.preventDefault();
-    // e.stopPropagation();
     // console.log("mouse wheel", e);
   });
   window.addEventListener('contextmenu', (e) => {
     e.preventDefault();
-    // e.stopPropagation();
     // console.log("contextmenu", e);
   });
 

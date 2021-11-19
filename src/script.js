@@ -76,14 +76,17 @@ const objectControler = () => {
   if (keys.forward) {
     sunLight.lookAt(czesio.position);
     czesio.translateOnAxis(new THREE.Vector3(0, 0, 1), 0.1);
+    czesioIdleAction.stop();
     czesioWalkAction.play();
   }
   if (czesioWalkAction && !keys.forward && !keys.backward) {
     czesioWalkAction.stop();
+    czesioIdleAction.play();
   }
 
   if (keys.backward) {
     czesio.translateOnAxis(new THREE.Vector3(0, 0, -1), 0.1);
+    czesioIdleAction.stop();
     czesioWalkAction.play();
   }
   if (keys.left) {
@@ -238,13 +241,13 @@ modelLoader.load('/Assets/Enviorment/Tree11.glb', (tree) => {
 });
 
 let mixer = null;
-let czesioWalkAction = null;
+let czesioWalkAction, czesioIdleAction;
 let czesio = null;
 
-modelLoader.load('/Assets/Characters/czesioCopy.glb', (model) => {
+modelLoader.load('/Assets/Characters/Czesio.glb', (model) => {
   czesio = model.scene.children[0];
   currentControlObject = czesio;
-
+  console.log(model);
   czesio.position.y = -0.1;
 
   scene.add(czesio);
@@ -252,4 +255,7 @@ modelLoader.load('/Assets/Characters/czesioCopy.glb', (model) => {
   mixer = new THREE.AnimationMixer(czesio);
 
   czesioWalkAction = mixer.clipAction(model.animations[3]);
+
+  czesioIdleAction = mixer.clipAction(model.animations[2]);
+  czesioIdleAction.setDuration(8);
 });
