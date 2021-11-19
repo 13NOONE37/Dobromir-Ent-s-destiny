@@ -37,6 +37,7 @@ cameraFolder.add(cameraDebug, 'offsetX').min(-100).max(100).name('offsetX');
 cameraFolder.add(cameraDebug, 'offsetY').min(-100).max(100).name('offsetY');
 cameraFolder.add(cameraDebug, 'offsetZ').min(-100).max(100).name('offsetZ');
 
+const duration = 0.5;
 //Camera control funciton
 let currentControlObject = null;
 const thirdPersonCamera = () => {
@@ -76,8 +77,8 @@ const objectControler = () => {
   if (keys.forward) {
     sunLight.lookAt(czesio.position);
     czesio.translateOnAxis(new THREE.Vector3(0, 0, 1), 0.1);
-    czesioIdleAction.stop();
     czesioWalkAction.play();
+    czesioIdleAction.stop();
   }
   if (czesioWalkAction && !keys.forward && !keys.backward) {
     czesioWalkAction.stop();
@@ -86,8 +87,8 @@ const objectControler = () => {
 
   if (keys.backward) {
     czesio.translateOnAxis(new THREE.Vector3(0, 0, -1), 0.1);
-    czesioIdleAction.stop();
     czesioWalkAction.play();
+    czesioIdleAction.stop();
   }
   if (keys.left) {
     // czesio.position.x += 0.1;
@@ -241,17 +242,13 @@ modelLoader.load('/Assets/Enviorment/Tree11.glb', (tree) => {
 });
 
 let mixer = null;
-let czesioWalkAction, czesioIdleAction;
-let czesio = null;
+let czesio, czesioWalkAction, czesioIdleAction;
 
 modelLoader.load('/Assets/Characters/Czesio.glb', (model) => {
   czesio = model.scene.children[0];
   currentControlObject = czesio;
-  console.log(model);
-  czesio.position.y = -0.1;
 
   scene.add(czesio);
-
   mixer = new THREE.AnimationMixer(czesio);
 
   czesioWalkAction = mixer.clipAction(model.animations[3]);
