@@ -46,12 +46,12 @@ export default (textureLoader, scene) => {
   const floorMaterial = new THREE.MeshStandardMaterial({
     color: new THREE.Color('#aaa'),
     aoMap: groundAmbient,
-    displacementMap: groundDisplacment,
-    displacementScale: 1.1,
+    // displacementMap: groundDisplacment,
+    // displacementScale: 1.1,
     normalMap: groundNormal,
     map: groundBaseColor,
-    bumpMap: groundBump,
-    bumpScale: 1.1,
+    // bumpMap: groundBump,
+    // bumpScale: 1.1,
   });
 
   const floor = new THREE.Mesh(floorGeometry, floorMaterial);
@@ -62,4 +62,5 @@ export default (textureLoader, scene) => {
     new THREE.BufferAttribute(floor.geometry.attributes.uv.array, 2),
   );
   scene.add(floor);
+  // physics.add.existing(floor);
 };
