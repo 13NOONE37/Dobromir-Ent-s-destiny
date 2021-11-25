@@ -62,5 +62,5 @@ export default (textureLoader, scene) => {
     new THREE.BufferAttribute(floor.geometry.attributes.uv.array, 2),
   );
   scene.add(floor);
-  // physics.add.existing(floor);
+  physics.add.existing(floor, { mass: 0 });
 };

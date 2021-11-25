@@ -106,6 +106,9 @@ const MainScene = () => {
       czesio.rotation.y -= 0.035;
     }
     if (keys.space) {
+      czesio.body.applyForceY(0.2);
+      czesioJumpAction.stop();
+      czesioJumpAction.play();
     }
     //Może Lepiej zrealizować te funkcje poprzez wysyłanie postaci aktualnie grywalnej do kontrolera i poruszania przez gsap
   };
@@ -152,9 +155,10 @@ const MainScene = () => {
   const { factory } = physics; // the factory will make/add object without physics
 
   // blue box
-  physics.add.box({ x: 0.05, y: 10 }, { lambert: { color: 0x2194ce } });
-  // static ground
-  physics.add.ground({ width: 20, height: 20 });
+  // physics.add.box({ x: 0.05, y: 10 }, { lambert: { color: 0x2194ce } });
+  // // static ground
+  // physics.add.ground({ width: 20, height: 20 },);
+  // physics.add.ground()
 
   // green sphere
   const geometry = new THREE.BoxBufferGeometry();
@@ -164,7 +168,6 @@ const MainScene = () => {
   scene.add(cube);
   physics.add.existing(cube);
   cube.body.setCollisionFlags(2); // make it kinematic
-
   /*!--Base--!*/
   const [textureLoader, cubeTextureLoader, modelLoader, enviormentMapTexture] =
     initLoadingManagers(scene, init);
@@ -173,7 +176,13 @@ const MainScene = () => {
   const keys = initInputControler();
 
   /*!---Content--! */
-  GenerateGround(textureLoader, scene, physics);
+  // GenerateGround(textureLoader, scene, physics);
+  const groundGeometry = new THREE.PlaneBufferGeometry(5000, 5000);
+  const groundMaterial = new THREE.MeshToonMaterial({ color: 0xff3333 });
+  const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+  ground.rotateX(-Math.PI * 0.5);
+  scene.add(ground);
+  physics.add.existing(ground, { mass: 0 });
   //forest
   const initForest = (treeBase) => {
     const forest = new THREE.Group();
@@ -202,8 +211,10 @@ const MainScene = () => {
     };
     renderForest();
 
-    forest.position.set(50, 2.85, 0);
+    forest.position.set(50, 3.85, 0);
     scene.add(forest);
+    physics.add.existing(forest);
+    // physics.physicsWorld.add.existing(forest);
     updateAllMaterials(scene, enviormentMapTexture);
   };
 
@@ -212,18 +223,21 @@ const MainScene = () => {
   });
 
   let mixer = null;
-  let czesio, czesioWalkAction, czesioIdleAction;
+  let czesio, czesioWalkAction, czesioIdleAction, czesioJumpAction;
 
-  modelLoader.load('/Assets/Characters/Czesio.glb', (model) => {
+  modelLoader.load('/Assets/Characters/Czesio2.glb', (model) => {
     czesio = model.scene.children[0];
     currentControlObject = czesio;
     czesio.position.set(2, 1.2, 0);
     scene.add(czesio);
-    physics.add.existing(czesio);
+    physics.add.existing(czesio, { shape: 'convex' });
+    console.log(model);
 
     mixer = new THREE.AnimationMixer(czesio);
 
-    czesioWalkAction = mixer.clipAction(model.animations[3]);
+    czesioWalkAction = mixer.clipAction(model.animations[4]);
+    czesioJumpAction = mixer.clipAction(model.animations[3]);
+    czesioJumpAction.setLoop(THREE.LoopOnce);
 
     czesioIdleAction = mixer.clipAction(model.animations[2]);
     czesioIdleAction.setDuration(8);
