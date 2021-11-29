@@ -13,6 +13,7 @@ import GenerateGround from './Assets/Enviorment/GenerateGround';
 import {
   AmmoPhysics,
   ExtendedMesh,
+  ExtendedObject3D,
   PhysicsLoader,
 } from '@enable3d/ammo-physics';
 
@@ -79,10 +80,10 @@ const MainScene = () => {
 
   const renderBasic = () => {
     renderer.render(scene, camera);
+    sunLight.target = currentControlObject;
   };
   const objectControler = () => {
     if (keys.forward) {
-      sunLight.lookAt(czesio.position);
       czesio.translateOnAxis(new THREE.Vector3(0, 0, 1), 0.1);
       czesioWalkAction.play();
       czesioIdleAction.stop();
@@ -96,17 +97,20 @@ const MainScene = () => {
       czesio.translateOnAxis(new THREE.Vector3(0, 0, -1), 0.1);
       czesioWalkAction.play();
       czesioIdleAction.stop();
+      czesio.body.applyForceZ(5);
     }
     if (keys.left) {
       // czesio.position.x += 0.1;
       czesio.rotation.y += 0.035;
+      czesio.body.applyForceX(5);
     }
     if (keys.right) {
       // czesio.position.x -= 0.1;
       czesio.rotation.y -= 0.035;
+      czesio.body.applyForceX(-5);
     }
     if (keys.space) {
-      czesio.body.applyForceY(0.2);
+      czesio.body.applyForceY(15);
       czesioJumpAction.stop();
       czesioJumpAction.play();
     }
@@ -132,9 +136,6 @@ const MainScene = () => {
     const deltaTime = elapsedTime - currentTime;
     currentTime = elapsedTime;
     //Physics
-    cube.rotation.x += 0.01;
-    cube.rotation.y += 0.01;
-    cube.body.needUpdate = true; // this is how you update kinematic borderImageSlice:
     physics.update(elapsedTime);
     physics.updateDebugger();
 
@@ -154,20 +155,6 @@ const MainScene = () => {
 
   const { factory } = physics; // the factory will make/add object without physics
 
-  // blue box
-  // physics.add.box({ x: 0.05, y: 10 }, { lambert: { color: 0x2194ce } });
-  // // static ground
-  // physics.add.ground({ width: 20, height: 20 },);
-  // physics.add.ground()
-
-  // green sphere
-  const geometry = new THREE.BoxBufferGeometry();
-  const material = new THREE.MeshLambertMaterial({ color: 0x00ff00 });
-  const cube = new THREE.Mesh(geometry, material);
-  cube.position.set(0, 5, 0);
-  scene.add(cube);
-  physics.add.existing(cube);
-  cube.body.setCollisionFlags(2); // make it kinematic
   /*!--Base--!*/
   const [textureLoader, cubeTextureLoader, modelLoader, enviormentMapTexture] =
     initLoadingManagers(scene, init);
@@ -176,13 +163,24 @@ const MainScene = () => {
   const keys = initInputControler();
 
   /*!---Content--! */
+
   // GenerateGround(textureLoader, scene, physics);
-  const groundGeometry = new THREE.PlaneBufferGeometry(5000, 5000);
-  const groundMaterial = new THREE.MeshToonMaterial({ color: 0xff3333 });
-  const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-  ground.rotateX(-Math.PI * 0.5);
-  scene.add(ground);
-  physics.add.existing(ground, { mass: 0 });
+
+  const groundMaterial = new THREE.MeshStandardMaterial({
+    color: new THREE.Color('#ff781f'),
+  });
+
+  physics.add.ground(
+    {
+      width: 500,
+      height: 500,
+      widthSegments: 512,
+      heightSegments: 512,
+    },
+    { custom: groundMaterial },
+  );
+  physics.setGravity(0, -9.8, 0);
+
   //forest
   const initForest = (treeBase) => {
     const forest = new THREE.Group();
@@ -211,9 +209,10 @@ const MainScene = () => {
     };
     renderForest();
 
-    forest.position.set(50, 3.85, 0);
+    forest.position.set(40, 5, -20);
     scene.add(forest);
-    physics.add.existing(forest);
+    // physics.add.existing(forest);
+    factory.add.existing(forest);
     // physics.physicsWorld.add.existing(forest);
     updateAllMaterials(scene, enviormentMapTexture);
   };
@@ -226,12 +225,63 @@ const MainScene = () => {
   let czesio, czesioWalkAction, czesioIdleAction, czesioJumpAction;
 
   modelLoader.load('/Assets/Characters/Czesio2.glb', (model) => {
-    czesio = model.scene.children[0];
-    currentControlObject = czesio;
-    czesio.position.set(2, 1.2, 0);
+    const children = model.scene.children[0];
+    currentControlObject = children;
+
+    czesio = new ExtendedObject3D();
+    czesio.add(children);
+
+    const data = [
+      {
+        radiusSegments: 24,
+        radiusTop: 4,
+        radiusBottom: 4,
+        height: 2,
+        z: 0,
+        y: 10,
+      },
+      {
+        radiusSegments: 24,
+        radiusTop: 4,
+        radiusBottom: 4,
+        height: 2,
+        z: 0,
+        y: -10,
+      },
+      {
+        radiusSegments: 24,
+        radiusTop: 5.5,
+        radiusBottom: 5.5,
+        height: 0.3,
+        z: 0,
+        y: 9,
+      },
+      {
+        radiusSegments: 24,
+        radiusTop: 5.5,
+        radiusBottom: 5.5,
+        height: 0.3,
+        z: 0,
+        y: -9,
+      },
+      {
+        radiusSegments: 4,
+        radiusTop: 1,
+        radiusBottom: 1,
+        height: 20,
+        z: 0,
+        y: 0,
+      },
+    ];
+
+    const wheel = new THREE.Group();
+
+    for (let i = 0; i < data.length; i++) {
+      wheel.add(make.cylinder(data[i]));
+    }
+
     scene.add(czesio);
-    physics.add.existing(czesio, { shape: 'convex' });
-    console.log(model);
+    physics.add.existing(czesio, { mass: 20, compound });
 
     mixer = new THREE.AnimationMixer(czesio);
 
