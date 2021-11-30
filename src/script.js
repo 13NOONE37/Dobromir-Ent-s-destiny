@@ -136,7 +136,8 @@ const MainScene = () => {
     const deltaTime = elapsedTime - currentTime;
     currentTime = elapsedTime;
     //Physics
-    physics.update(elapsedTime);
+    // physics.update(elapsedTime);
+    physics.update(60);
     physics.updateDebugger();
 
     objectControler();
@@ -152,7 +153,6 @@ const MainScene = () => {
   };
   const physics = new AmmoPhysics(scene);
   physics.debug.enable(true);
-
   const { factory } = physics; // the factory will make/add object without physics
 
   /*!--Base--!*/
@@ -169,7 +169,9 @@ const MainScene = () => {
   const groundMaterial = new THREE.MeshStandardMaterial({
     color: new THREE.Color('#ff781f'),
   });
-
+  alert(
+    'https://github.com/enable3d/enable3d-website/blob/master/src/examples/3rd-person-camera.html',
+  );
   physics.add.ground(
     {
       width: 500,
@@ -179,7 +181,7 @@ const MainScene = () => {
     },
     { custom: groundMaterial },
   );
-  physics.setGravity(0, -9.8, 0);
+  physics.physicsWorld.addConstraint();
 
   //forest
   const initForest = (treeBase) => {
@@ -274,11 +276,25 @@ const MainScene = () => {
       },
     ];
 
-    const wheel = new THREE.Group();
+    const compound = new THREE.Group();
 
-    for (let i = 0; i < data.length; i++) {
-      wheel.add(make.cylinder(data[i]));
+    const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+
+    for (const object of data) {
+      const geometry = new THREE.CylinderGeometry(
+        object.radiusTop,
+        object.radiusBottom,
+        object.height,
+        object.radiusSegments,
+      );
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.y = object.y;
+      mesh.position.z = object.z;
+
+      compound.add(mesh);
     }
+    compound.position.y = 10;
+    compound.rotateX(Math.PI * 0.5);
 
     scene.add(czesio);
     physics.add.existing(czesio, { mass: 20, compound });
