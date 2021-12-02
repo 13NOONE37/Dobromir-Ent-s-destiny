@@ -82,36 +82,46 @@ const MainScene = () => {
     renderer.render(scene, camera);
     sunLight.target = currentControlObject;
   };
+
+  let speed = { value: 1.7 };
+  gui.add(speed, 'value').min(1).max(5);
+
   const objectControler = () => {
-    if (keys.forward) {
-      czesio.body.applyForceZ(7);
-      czesioWalkAction.play();
-      czesioIdleAction.stop();
-    }
     if (czesioWalkAction && !keys.forward && !keys.backward) {
+      czesio.body.setVelocity(0, 0, 0);
       czesioWalkAction.stop();
       czesioIdleAction.play();
     }
 
+    if (keys.forward) {
+      czesio.body.setVelocityZ(speed.value);
+      czesioWalkAction.play();
+      czesioIdleAction.stop();
+    }
     if (keys.backward) {
-      // czesio.translateOnAxis(new THREE.Vector3(0, 0, -1), 0.1);
-      czesio.body.applyForceZ(-7);
+      // czesio.body.translateOnAxis(new THREE.Vector3(0, 0, -1), 0.1);
+      czesio.body.setVelocityZ(-speed.value);
       czesioWalkAction.play();
       czesioIdleAction.stop();
     }
     if (keys.left) {
-      czesio.rotation.y += 0.035;
-      czesio.body.applyForceX(5);
+      czesio.body.setVelocityX(speed.value);
     }
     if (keys.right) {
-      czesio.rotation.y -= 0.035;
-      czesio.body.applyForceX(-5);
+      czesio.body.setVelocityX(-speed.value);
     }
-    if (keys.space) {
-      czesio.body.applyForceY(10);
+    if (keys.space && !keys.isJumping) {
+      console.log(keys.isJumping);
+      keys.isJumping = true;
       czesioJumpAction.stop();
       czesioJumpAction.play();
-      czesio.rotation.x;
+      czesio.body.setVelocityY(speed.value * 10);
+      keys.isJumping = false;
+
+      // setTimeout(() => {
+      //   czesio.body.setVelocityY(speed.value * 10);
+      //   keys.isJumping = false;
+      // }, 200);
     }
     //Może Lepiej zrealizować te funkcje poprzez wysyłanie postaci aktualnie grywalnej do kontrolera i poruszania przez gsap
   };
@@ -229,80 +239,17 @@ const MainScene = () => {
     czesio = new ExtendedObject3D();
     czesio.add(children);
 
-    // const data = [
-    //   {
-    //     radiusSegments: 24,
-    //     radiusTop: 4,
-    //     radiusBottom: 4,
-    //     height: 2,
-    //     z: 0,
-    //     y: 10,
-    //   },
-    //   {
-    //     radiusSegments: 24,
-    //     radiusTop: 4,
-    //     radiusBottom: 4,
-    //     height: 2,
-    //     z: 0,
-    //     y: -10,
-    //   },
-    //   {
-    //     radiusSegments: 24,
-    //     radiusTop: 5.5,
-    //     radiusBottom: 5.5,
-    //     height: 0.3,
-    //     z: 0,
-    //     y: 9,
-    //   },
-    //   {
-    //     radiusSegments: 24,
-    //     radiusTop: 5.5,
-    //     radiusBottom: 5.5,
-    //     height: 0.3,
-    //     z: 0,
-    //     y: -9,
-    //   },
-    //   {
-    //     radiusSegments: 4,
-    //     radiusTop: 1,
-    //     radiusBottom: 1,
-    //     height: 20,
-    //     z: 0,
-    //     y: 0,
-    //   },
-    // ];
-
-    // const compound = new THREE.Group();
-
-    // const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-
-    // for (const object of data) {
-    //   const geometry = new THREE.CylinderGeometry(
-    //     object.radiusTop,
-    //     object.radiusBottom,
-    //     object.height,
-    //     object.radiusSegments,
-    //   );
-    //   const mesh = new THREE.Mesh(geometry, material);
-    //   mesh.position.y = object.y;
-    //   mesh.position.z = object.z;
-
-    //   compound.add(mesh);
-    // }
-    // compound.position.y = 10;
-    // compound.rotateX(Math.PI * 0.5);
-
     scene.add(czesio);
-
     physics.add.existing(czesio, {
       mass: 20,
       shape: 'capsule',
       radius: 1.2,
       height: 1.25,
-      offset: { y: -1.45 },
+      offset: { y: -1.95 },
     });
     czesio.body.setFriction(0.8);
     czesio.body.setAngularFactor(0, 0, 0);
+    czesio.body.setAngularVelocityY(0);
 
     mixer = new THREE.AnimationMixer(czesio);
 

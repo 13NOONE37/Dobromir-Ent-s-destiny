@@ -7,6 +7,7 @@ const initInputControler = () => {
     space: false,
     shift: false,
     action: false,
+    isJumping: false,
   };
 
   const handleKeyDown = (e) => {
