@@ -84,7 +84,7 @@ const MainScene = () => {
   };
   const objectControler = () => {
     if (keys.forward) {
-      czesio.translateOnAxis(new THREE.Vector3(0, 0, 1), 0.1);
+      czesio.body.applyForceZ(7);
       czesioWalkAction.play();
       czesioIdleAction.stop();
     }
@@ -94,25 +94,24 @@ const MainScene = () => {
     }
 
     if (keys.backward) {
-      czesio.translateOnAxis(new THREE.Vector3(0, 0, -1), 0.1);
+      // czesio.translateOnAxis(new THREE.Vector3(0, 0, -1), 0.1);
+      czesio.body.applyForceZ(-7);
       czesioWalkAction.play();
       czesioIdleAction.stop();
-      czesio.body.applyForceZ(5);
     }
     if (keys.left) {
-      // czesio.position.x += 0.1;
       czesio.rotation.y += 0.035;
       czesio.body.applyForceX(5);
     }
     if (keys.right) {
-      // czesio.position.x -= 0.1;
       czesio.rotation.y -= 0.035;
       czesio.body.applyForceX(-5);
     }
     if (keys.space) {
-      czesio.body.applyForceY(15);
+      czesio.body.applyForceY(10);
       czesioJumpAction.stop();
       czesioJumpAction.play();
+      czesio.rotation.x;
     }
     //Może Lepiej zrealizować te funkcje poprzez wysyłanie postaci aktualnie grywalnej do kontrolera i poruszania przez gsap
   };
@@ -169,9 +168,7 @@ const MainScene = () => {
   const groundMaterial = new THREE.MeshStandardMaterial({
     color: new THREE.Color('#ff781f'),
   });
-  alert(
-    'https://github.com/enable3d/enable3d-website/blob/master/src/examples/3rd-person-camera.html',
-  );
+  // 'https://github.com/enable3d/enable3d-website/blob/master/src/examples/3rd-person-camera.html',
   physics.add.ground(
     {
       width: 500,
@@ -181,7 +178,6 @@ const MainScene = () => {
     },
     { custom: groundMaterial },
   );
-  physics.physicsWorld.addConstraint();
 
   //forest
   const initForest = (treeBase) => {
@@ -233,71 +229,80 @@ const MainScene = () => {
     czesio = new ExtendedObject3D();
     czesio.add(children);
 
-    const data = [
-      {
-        radiusSegments: 24,
-        radiusTop: 4,
-        radiusBottom: 4,
-        height: 2,
-        z: 0,
-        y: 10,
-      },
-      {
-        radiusSegments: 24,
-        radiusTop: 4,
-        radiusBottom: 4,
-        height: 2,
-        z: 0,
-        y: -10,
-      },
-      {
-        radiusSegments: 24,
-        radiusTop: 5.5,
-        radiusBottom: 5.5,
-        height: 0.3,
-        z: 0,
-        y: 9,
-      },
-      {
-        radiusSegments: 24,
-        radiusTop: 5.5,
-        radiusBottom: 5.5,
-        height: 0.3,
-        z: 0,
-        y: -9,
-      },
-      {
-        radiusSegments: 4,
-        radiusTop: 1,
-        radiusBottom: 1,
-        height: 20,
-        z: 0,
-        y: 0,
-      },
-    ];
+    // const data = [
+    //   {
+    //     radiusSegments: 24,
+    //     radiusTop: 4,
+    //     radiusBottom: 4,
+    //     height: 2,
+    //     z: 0,
+    //     y: 10,
+    //   },
+    //   {
+    //     radiusSegments: 24,
+    //     radiusTop: 4,
+    //     radiusBottom: 4,
+    //     height: 2,
+    //     z: 0,
+    //     y: -10,
+    //   },
+    //   {
+    //     radiusSegments: 24,
+    //     radiusTop: 5.5,
+    //     radiusBottom: 5.5,
+    //     height: 0.3,
+    //     z: 0,
+    //     y: 9,
+    //   },
+    //   {
+    //     radiusSegments: 24,
+    //     radiusTop: 5.5,
+    //     radiusBottom: 5.5,
+    //     height: 0.3,
+    //     z: 0,
+    //     y: -9,
+    //   },
+    //   {
+    //     radiusSegments: 4,
+    //     radiusTop: 1,
+    //     radiusBottom: 1,
+    //     height: 20,
+    //     z: 0,
+    //     y: 0,
+    //   },
+    // ];
 
-    const compound = new THREE.Group();
+    // const compound = new THREE.Group();
 
-    const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+    // const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
 
-    for (const object of data) {
-      const geometry = new THREE.CylinderGeometry(
-        object.radiusTop,
-        object.radiusBottom,
-        object.height,
-        object.radiusSegments,
-      );
-      const mesh = new THREE.Mesh(geometry, material);
-      mesh.position.y = object.y;
-      mesh.position.z = object.z;
+    // for (const object of data) {
+    //   const geometry = new THREE.CylinderGeometry(
+    //     object.radiusTop,
+    //     object.radiusBottom,
+    //     object.height,
+    //     object.radiusSegments,
+    //   );
+    //   const mesh = new THREE.Mesh(geometry, material);
+    //   mesh.position.y = object.y;
+    //   mesh.position.z = object.z;
 
-      compound.add(mesh);
-    }
-    compound.position.y = 10;
-    compound.rotateX(Math.PI * 0.5);
+    //   compound.add(mesh);
+    // }
+    // compound.position.y = 10;
+    // compound.rotateX(Math.PI * 0.5);
 
     scene.add(czesio);
-    physics.add.existing(czesio, { mass: 20, compound });
+
+    physics.add.existing(czesio, {
+      mass: 20,
+      shape: 'capsule',
+      radius: 1.2,
+      height: 1.25,
+      offset: { y: -1.45 },
+    });
+    czesio.body.setFriction(0.8);
+    czesio.body.setAngularFactor(0, 0, 0);
 
     mixer = new THREE.AnimationMixer(czesio);
 
