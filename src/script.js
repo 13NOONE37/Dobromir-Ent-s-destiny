@@ -54,8 +54,8 @@ const MainScene = () => {
         cameraDebug.offsetY,
         cameraDebug.offsetZ,
       );
-      idealOffset.applyQuaternion(currentControlObject.quaternion);
-      idealOffset.add(currentControlObject.position);
+      idealOffset.applyQuaternion(currentControlObject.parent.quaternion);
+      idealOffset.add(currentControlObject.parent.position);
 
       return idealOffset;
     };
@@ -65,8 +65,8 @@ const MainScene = () => {
         cameraDebug.lookY,
         cameraDebug.lookZ,
       );
-      idealLookAt.applyQuaternion(currentControlObject.quaternion);
-      idealLookAt.add(currentControlObject.position);
+      idealLookAt.applyQuaternion(currentControlObject.parent.quaternion);
+      idealLookAt.add(currentControlObject.parent.position);
 
       return idealLookAt;
     };
@@ -87,7 +87,13 @@ const MainScene = () => {
   gui.add(speed, 'value').min(1).max(5);
 
   const objectControler = () => {
-    if (czesioWalkAction && !keys.forward && !keys.backward) {
+    if (
+      czesioWalkAction &&
+      !keys.forward &&
+      !keys.backward &&
+      !keys.left &&
+      !keys.right
+    ) {
       czesio.body.setVelocity(0, 0, 0);
       czesioWalkAction.stop();
       czesioIdleAction.play();
@@ -99,16 +105,24 @@ const MainScene = () => {
       czesioIdleAction.stop();
     }
     if (keys.backward) {
-      // czesio.body.translateOnAxis(new THREE.Vector3(0, 0, -1), 0.1);
-      czesio.body.setVelocityZ(-speed.value);
+      // czesio.translateOnAxis(new THREE.Vector3(0, 0, -1), 0.1);
+      czesio.translateOnAxis(new THREE.Vector3(0, 0, -1), 0.1);
+      // czesio.rotateY(-Math.PI);
+      // czesio.body.setVelocityZ(-speed.value);
       czesioWalkAction.play();
       czesioIdleAction.stop();
     }
     if (keys.left) {
+      czesio.rotateY(Math.PI * 0.5);
       czesio.body.setVelocityX(speed.value);
+      czesioWalkAction.play();
+      czesioIdleAction.stop();
     }
     if (keys.right) {
+      czesio.rotateY(-Math.PI * 0.5);
       czesio.body.setVelocityX(-speed.value);
+      czesioWalkAction.play();
+      czesioIdleAction.stop();
     }
     if (keys.space && !keys.isJumping) {
       console.log(keys.isJumping);
@@ -131,7 +145,6 @@ const MainScene = () => {
     mixer && mixer.update(deltaTime);
 
     // currentControlObject && thirdPersonCamera();
-
     //Sun update
     skyEffectControler.elevation = ((currentTime / 50) % 180) + 1;
     skyGuiChanged();
