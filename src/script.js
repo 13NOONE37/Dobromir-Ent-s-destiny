@@ -106,9 +106,8 @@ const MainScene = () => {
     }
     if (keys.backward) {
       // czesio.translateOnAxis(new THREE.Vector3(0, 0, -1), 0.1);
-      czesio.translateOnAxis(new THREE.Vector3(0, 0, -1), 0.1);
-      // czesio.rotateY(-Math.PI);
-      // czesio.body.setVelocityZ(-speed.value);
+      czesio.rotateY(-Math.PI);
+      czesio.body.setVelocityZ(-speed.value);
       czesioWalkAction.play();
       czesioIdleAction.stop();
     }
