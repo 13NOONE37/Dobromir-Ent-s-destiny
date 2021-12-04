@@ -80,13 +80,14 @@ const MainScene = () => {
 
   const renderBasic = () => {
     renderer.render(scene, camera);
-    sunLight.target = currentControlObject;
+    // sunLight.target = currentControlObject; // camera look at controlObject
   };
 
   let speed = { value: 1.7 };
   gui.add(speed, 'value').min(1).max(5);
 
-  const objectControler = () => {
+  const objectControler = (elapsedTime) => {
+    const theta = czesio.world.theta;
     if (
       czesioWalkAction &&
       !keys.forward &&
@@ -94,12 +95,21 @@ const MainScene = () => {
       !keys.left &&
       !keys.right
     ) {
+      // turn player
+      //  if (!isIdle) {
+      // const directionTheta = Math.atan2(walkDirection.x, walkDirection.z) + Math.PI
+      // const playerTheta = czesio.world.theta + Math.PI
+      // const diff = directionTheta - playerTheta
+      // if (diff > 0.25) czesio.body.setAngularVelocityY(10)
+      // if (diff < -0.25) czesio.body.setAngularVelocityY(-10)
+      // }
       czesio.body.setVelocity(0, 0, 0);
       czesioWalkAction.stop();
       czesioIdleAction.play();
     }
 
     if (keys.forward) {
+      console.log(czesio.body);
       czesio.body.setVelocityZ(speed.value);
       czesioWalkAction.play();
       czesioIdleAction.stop();
@@ -117,25 +127,26 @@ const MainScene = () => {
       czesioWalkAction.play();
       czesioIdleAction.stop();
     }
+
     if (keys.right) {
-      czesio.rotateY(-Math.PI * 0.5);
-      czesio.body.setVelocityX(-speed.value);
-      czesioWalkAction.play();
-      czesioIdleAction.stop();
+      czesio.body.setAngularVelocityY(4);
+      setTimeout(() => {
+        czesio.body.setAngularVelocityY(0);
+      }, 10);
+      // czesio.rotateY(-Math.PI * 0.5);
+      // czesio.body.setVelocityX(-speed.value);
+      // czesioWalkAction.play();
+      // czesioIdleAction.stop();
     }
     if (keys.space && !keys.isJumping) {
-      console.log(keys.isJumping);
-      keys.isJumping = true;
       czesioJumpAction.stop();
       czesioJumpAction.play();
-      czesio.body.setVelocityY(speed.value * 10);
-      keys.isJumping = false;
-
-      // setTimeout(() => {
-      //   czesio.body.setVelocityY(speed.value * 10);
-      //   keys.isJumping = false;
-      // }, 200);
+      console.log(czesio.world.theta);
+      setTimeout(() => {
+        czesio.body.applyForceY(16);
+      }, 200);
     }
+
     //Może Lepiej zrealizować te funkcje poprzez wysyłanie postaci aktualnie grywalnej do kontrolera i poruszania przez gsap
   };
   const updateEnviorment = (currentTime, deltaTime) => {
@@ -157,11 +168,10 @@ const MainScene = () => {
     const deltaTime = elapsedTime - currentTime;
     currentTime = elapsedTime;
     //Physics
-    // physics.update(elapsedTime);
     physics.update(60);
     physics.updateDebugger();
 
-    objectControler();
+    objectControler(elapsedTime);
     updateEnviorment(currentTime, deltaTime);
     renderBasic(deltaTime);
 
@@ -174,6 +184,7 @@ const MainScene = () => {
   };
   const physics = new AmmoPhysics(scene);
   physics.debug.enable(true);
+
   const { factory } = physics; // the factory will make/add object without physics
 
   /*!--Base--!*/
