@@ -87,6 +87,7 @@ const MainScene = () => {
   gui.add(speed, 'value').min(1).max(5);
 
   const objectControler = (elapsedTime) => {
+    const moveCharacter = (0.5 - keys.mouse.x / window.innerWidth) * Math.PI;
     const theta = czesio.world.theta;
     if (
       czesioWalkAction &&
@@ -116,7 +117,6 @@ const MainScene = () => {
     }
     if (keys.backward) {
       // czesio.translateOnAxis(new THREE.Vector3(0, 0, -1), 0.1);
-      czesio.rotateY(-Math.PI);
       czesio.body.setVelocityZ(-speed.value);
       czesioWalkAction.play();
       czesioIdleAction.stop();
@@ -129,14 +129,10 @@ const MainScene = () => {
     }
 
     if (keys.right) {
-      czesio.body.setAngularVelocityY(4);
-      setTimeout(() => {
-        czesio.body.setAngularVelocityY(0);
-      }, 10);
-      // czesio.rotateY(-Math.PI * 0.5);
-      // czesio.body.setVelocityX(-speed.value);
-      // czesioWalkAction.play();
-      // czesioIdleAction.stop();
+      czesio.rotateY(-Math.PI * 0.5);
+      czesio.body.setVelocityX(-speed.value);
+      czesioWalkAction.play();
+      czesioIdleAction.stop();
     }
     if (keys.space && !keys.isJumping) {
       czesioJumpAction.stop();
@@ -170,6 +166,11 @@ const MainScene = () => {
     //Physics
     physics.update(60);
     physics.updateDebugger();
+
+    // const x = (keys.mouse.x / window.innerWidth) * 4 - 1;
+    // const y = -(keys.mouse.y / window.innerHeight) * 4 + 1;
+
+    // czesio.rotation.y = -x;
 
     objectControler(elapsedTime);
     updateEnviorment(currentTime, deltaTime);
@@ -282,6 +283,19 @@ const MainScene = () => {
 
     czesioIdleAction = mixer.clipAction(model.animations[2]);
     czesioIdleAction.setDuration(8);
+  });
+  modelLoader.load('/Assets/Enviorment/house.glb', (model) => {
+    const children = model.scene.children[0];
+    console.log(children);
+    children.position.set(0, 0, 0);
+    const house = new ExtendedObject3D();
+    house.add(children);
+
+    scene.add(house);
+    physics.add.existing(house, {
+      mass: 100,
+      shape: 'hull',
+    });
   });
 };
 PhysicsLoader('/Ammo/', () => MainScene());
