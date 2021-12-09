@@ -305,9 +305,26 @@ const MainScene = () => {
       return box;
     };
     scene.add(house);
-    physics.add.existing(addBox(10, 10, 10), {
+    const box = factory.add.box(
+      { x: 1, y: 2, z: 10, width: 5, height: 3, depth: 1 },
+      { lambert: { color: 'red', transparent: true, opacity: 0.5 } },
+    );
+    box.position.set(0, 5, 0);
+
+    // you can later add physics to it
+    physics.add.existing(box, { mass: 2, collisionFlags: 0 });
+    physics.add.existing(house, {
       mass: 0,
     });
+
+    // compound shape (group based)
+    // (the center of mass is 0,0,0)
+    let group = new THREE.Group();
+    const body = group.add(addBox(130, 10, 10));
+    const head = group.add(addBox(10, 10, 10));
+    group.add(body, head);
+    group.position.setX(3);
+    physics.add.existing(group);
   });
 };
 PhysicsLoader('/Ammo/', () => MainScene());
