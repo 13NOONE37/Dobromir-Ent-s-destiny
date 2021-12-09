@@ -110,7 +110,6 @@ const MainScene = () => {
     }
 
     if (keys.forward) {
-      console.log(czesio.body);
       czesio.body.setVelocityZ(speed.value);
       czesioWalkAction.play();
       czesioIdleAction.stop();
@@ -284,17 +283,30 @@ const MainScene = () => {
     czesioIdleAction = mixer.clipAction(model.animations[2]);
     czesioIdleAction.setDuration(8);
   });
-  modelLoader.load('/Assets/Enviorment/house.glb', (model) => {
+  modelLoader.load('/Assets/Enviorment/Garage.glb', (model) => {
     const children = model.scene.children[0];
-    console.log(children);
-    children.position.set(0, 0, 0);
+    children.position.y += 0.35;
     const house = new ExtendedObject3D();
     house.add(children);
+    house.position.set(10, 0, 0);
 
+    const addBox = (
+      w,
+      h,
+      d,
+      pos = { x: 0, y: 0, z: 0 },
+      rot = { x: 0, y: 0, z: 0 },
+    ) => {
+      const boxMaterial = new THREE.MeshBasicMaterial();
+      const boxGeometry = new THREE.BoxBufferGeometry(w, h, d, 1, 1, 1);
+      const box = new THREE.Mesh(boxMaterial, boxGeometry);
+      box.position.set(pos);
+      box.rotation.set(rot);
+      return box;
+    };
     scene.add(house);
-    physics.add.existing(house, {
-      mass: 100,
-      shape: 'hull',
+    physics.add.existing(addBox(10, 10, 10), {
+      mass: 0,
     });
   });
 };
