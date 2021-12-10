@@ -284,47 +284,21 @@ const MainScene = () => {
     czesioIdleAction.setDuration(8);
   });
   modelLoader.load('/Assets/Enviorment/Garage.glb', (model) => {
-    const children = model.scene.children[0];
-    children.position.y += 0.35;
-    const house = new ExtendedObject3D();
-    house.add(children);
-    house.position.set(10, 0, 0);
+    modelLoader.load('/Assets/Enviorment/housePhysics.glb', (physicsModel) => {
+      const children = model.scene.children[0];
+      children.position.y += 0.35;
+      const house = new ExtendedObject3D();
+      const housePhysics = new ExtendedObject3D();
+      housePhysics.add(physicsModel.scene.children[0]);
+      house.add(children);
 
-    const addBox = (
-      w,
-      h,
-      d,
-      pos = { x: 0, y: 0, z: 0 },
-      rot = { x: 0, y: 0, z: 0 },
-    ) => {
-      const boxMaterial = new THREE.MeshBasicMaterial();
-      const boxGeometry = new THREE.BoxBufferGeometry(w, h, d, 1, 1, 1);
-      const box = new THREE.Mesh(boxMaterial, boxGeometry);
-      box.position.set(pos);
-      box.rotation.set(rot);
-      return box;
-    };
-    scene.add(house);
-    const box = factory.add.box(
-      { x: 1, y: 2, z: 10, width: 5, height: 3, depth: 1 },
-      { lambert: { color: 'red', transparent: true, opacity: 0.5 } },
-    );
-    box.position.set(0, 5, 0);
-
-    // you can later add physics to it
-    physics.add.existing(box, { mass: 2, collisionFlags: 0 });
-    physics.add.existing(house, {
-      mass: 0,
+      scene.add(house);
+      physics.add.existing(housePhysics, {
+        mass: 0,
+        shape: 'compound',
+        addChildren: false,
+      });
     });
-
-    // compound shape (group based)
-    // (the center of mass is 0,0,0)
-    let group = new THREE.Group();
-    const body = group.add(addBox(130, 10, 10));
-    const head = group.add(addBox(10, 10, 10));
-    group.add(body, head);
-    group.position.setX(3);
-    physics.add.existing(group);
   });
 };
 PhysicsLoader('/Ammo/', () => MainScene());
