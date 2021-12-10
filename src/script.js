@@ -149,7 +149,7 @@ const MainScene = () => {
     controls.update();
     mixer && mixer.update(deltaTime);
 
-    // currentControlObject && thirdPersonCamera();
+    currentControlObject && thirdPersonCamera();
     //Sun update
     skyEffectControler.elevation = ((currentTime / 50) % 180) + 1;
     skyGuiChanged();
@@ -283,20 +283,32 @@ const MainScene = () => {
     czesioIdleAction = mixer.clipAction(model.animations[2]);
     czesioIdleAction.setDuration(8);
   });
+
+  const addModel = (position, rotation, scale) => {};
+  modelLoader.load('/Assets/JohnFarmTest.glb', (model) => {
+    model.scene.position.set(-150, 0.35, -150);
+    scene.add(model.scene);
+  });
   modelLoader.load('/Assets/Enviorment/Garage.glb', (model) => {
     modelLoader.load('/Assets/Enviorment/housePhysics.glb', (physicsModel) => {
+      const config = { x: 15, y: 0, z: 15, scale: 5 };
       const children = model.scene.children[0];
       children.position.y += 0.35;
+
       const house = new ExtendedObject3D();
+      house.add(children);
+      house.position.set(config.x, config.y, config.z);
+
       const housePhysics = new ExtendedObject3D();
       housePhysics.add(physicsModel.scene.children[0]);
-      house.add(children);
+      housePhysics.position.set(config.x, config.y, config.z);
 
       scene.add(house);
       physics.add.existing(housePhysics, {
+        shape: 'concave',
         mass: 0,
-        shape: 'compound',
-        addChildren: false,
+        collisionFlags: 1,
+        autoCenter: false,
       });
     });
   });
