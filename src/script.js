@@ -249,7 +249,7 @@ const MainScene = () => {
   };
 
   modelLoader.load('/Assets/Enviorment/Tree11.glb', (tree) => {
-    initForest(tree.scene.children[0]);
+    // initForest(tree.scene.children[0]);
   });
 
   let mixer = null;
@@ -288,10 +288,17 @@ const MainScene = () => {
     currentScene,
     visibleObj,
     physicalObj,
+    mass = 0,
     positionCoefficient = { x: 0, y: 0, z: 0 },
-    rotationCoefficient = { x: 0, y: 0, z: 0 },
+    rotationCoefficient = { x: 0, y: 180, z: 0 },
     scaleCoefficient = { x: 0, y: 0, z: 0 },
   ) => {
+    // visibleObj.position.set(0, 0, 0);
+    // visibleObj.rotation.set(0, 0, 0);
+    // physicalObj.position.set(0,0,0);
+    // physicalObj.rotation.set(0, 0, 0);
+
+    console.log(visibleObj);
     const position = {
       x: visibleObj.position.x + positionCoefficient.x,
       y: visibleObj.position.y + positionCoefficient.y,
@@ -317,28 +324,35 @@ const MainScene = () => {
     visibleObject.position.set(position.x, position.y, position.z);
     physicalObject.position.set(position.x, position.y, position.z);
     //Apply Rotation
-    visibleObject.rotation.reorder('YXZ');
-    visibleObject.rotation.set(rotation.x, rotation.y, rotation.z);
-    physicalObject.rotation.reorder('YXZ');
-    physicalObject.rotation.set(rotation.x, rotation.y, rotation.z);
+    // visibleObject.rotation.reorder('YXZ');
+    // visibleObject.rotation.set(rotation.x, rotation.y, rotation.z);
+    // physicalObject.rotation.reorder('YXZ');
+    // physicalObject.rotation.set(rotation.x, rotation.y, rotation.z);
 
     currentScene.add(visibleObject);
     physics.add.existing(physicalObject, {
       shape: 'concave',
-      mass: 0,
+      mass: mass,
       collisionFlags: 1,
       autoCenter: false,
     });
   };
 
   modelLoader.load('/Assets/JohnFarmTest.glb', (model) => {
+    // scene.add(model.scene);
+    // model.scene.traverse((item) => {
+    //   if (item.name.indexOf('Physics') != -1) {
+    //     item.remove();
+    //   }
+    // });
+
     const moveCoefficient = { x: -100, y: 0.35, z: 0 };
     console.log(model.scene);
-    //Fence
     initStaticModel(
       scene,
       model.scene.getObjectByName('Fence', true),
       model.scene.getObjectByName('FencePhysics', true),
+      0,
       moveCoefficient,
     );
     //House
@@ -346,6 +360,7 @@ const MainScene = () => {
       scene,
       model.scene.getObjectByName('House', true),
       model.scene.getObjectByName('HousePhysics', true),
+      0,
       moveCoefficient,
     );
     //WoodPile
@@ -353,6 +368,22 @@ const MainScene = () => {
       scene,
       model.scene.getObjectByName('WoodPile', true),
       model.scene.getObjectByName('WoodPilePhysics', true),
+      0,
+      moveCoefficient,
+    );
+    //Trees
+    initStaticModel(
+      scene,
+      model.scene.getObjectByName('Oak1', true),
+      model.scene.getObjectByName('Oak1Physics', true),
+      0,
+      moveCoefficient,
+    );
+    initStaticModel(
+      scene,
+      model.scene.getObjectByName('Oak2', true),
+      model.scene.getObjectByName('Oak2Physics', true),
+      0,
       moveCoefficient,
     );
     //Grass
