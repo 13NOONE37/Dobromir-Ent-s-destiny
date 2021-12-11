@@ -149,7 +149,7 @@ const MainScene = () => {
     controls.update();
     mixer && mixer.update(deltaTime);
 
-    currentControlObject && thirdPersonCamera();
+    // currentControlObject && thirdPersonCamera();
     //Sun update
     skyEffectControler.elevation = ((currentTime / 50) % 180) + 1;
     skyGuiChanged();
@@ -266,7 +266,7 @@ const MainScene = () => {
     physics.add.existing(czesio, {
       mass: 20,
       shape: 'capsule',
-      radius: 1.2,
+      radius: 1.55,
       height: 1.25,
       offset: { y: -1.95 },
     });
@@ -284,33 +284,79 @@ const MainScene = () => {
     czesioIdleAction.setDuration(8);
   });
 
-  const addModel = (position, rotation, scale) => {};
-  modelLoader.load('/Assets/JohnFarmTest.glb', (model) => {
-    model.scene.position.set(-150, 0.35, -150);
-    scene.add(model.scene);
-  });
-  modelLoader.load('/Assets/Enviorment/Garage.glb', (model) => {
-    modelLoader.load('/Assets/Enviorment/housePhysics.glb', (physicsModel) => {
-      const config = { x: 15, y: 0, z: 15, scale: 5 };
-      const children = model.scene.children[0];
-      children.position.y += 0.35;
+  const initStaticModel = (
+    currentScene,
+    visibleObj,
+    physicalObj,
+    positionCoefficient = { x: 0, y: 0, z: 0 },
+    rotationCoefficient = { x: 0, y: 0, z: 0 },
+    scaleCoefficient = { x: 0, y: 0, z: 0 },
+  ) => {
+    const position = {
+      x: visibleObj.position.x + positionCoefficient.x,
+      y: visibleObj.position.y + positionCoefficient.y,
+      z: visibleObj.position.z + positionCoefficient.z,
+    };
+    const rotation = {
+      x: visibleObj.rotation.x + rotationCoefficient.x,
+      y: visibleObj.rotation.y + rotationCoefficient.y,
+      z: visibleObj.rotation.z + rotationCoefficient.z,
+    };
+    const scale = {
+      x: visibleObj.scale.x + scaleCoefficient.x,
+      y: visibleObj.scale.y + scaleCoefficient.y,
+      z: visibleObj.scale.z + scaleCoefficient.z,
+    };
 
-      const house = new ExtendedObject3D();
-      house.add(children);
-      house.position.set(config.x, config.y, config.z);
+    const visibleObject = new ExtendedObject3D();
+    visibleObject.add(visibleObj);
+    const physicalObject = new ExtendedObject3D();
+    physicalObject.add(physicalObj);
 
-      const housePhysics = new ExtendedObject3D();
-      housePhysics.add(physicsModel.scene.children[0]);
-      housePhysics.position.set(config.x, config.y, config.z);
+    //Apply Position
+    visibleObject.position.set(position.x, position.y, position.z);
+    physicalObject.position.set(position.x, position.y, position.z);
+    //Apply Rotation
+    visibleObject.rotation.reorder('YXZ');
+    visibleObject.rotation.set(rotation.x, rotation.y, rotation.z);
+    physicalObject.rotation.reorder('YXZ');
+    physicalObject.rotation.set(rotation.x, rotation.y, rotation.z);
 
-      scene.add(house);
-      physics.add.existing(housePhysics, {
-        shape: 'concave',
-        mass: 0,
-        collisionFlags: 1,
-        autoCenter: false,
-      });
+    currentScene.add(visibleObject);
+    physics.add.existing(physicalObject, {
+      shape: 'concave',
+      mass: 0,
+      collisionFlags: 1,
+      autoCenter: false,
     });
+  };
+
+  modelLoader.load('/Assets/JohnFarmTest.glb', (model) => {
+    const moveCoefficient = { x: -100, y: 0.35, z: 0 };
+    console.log(model.scene);
+    //Fence
+    initStaticModel(
+      scene,
+      model.scene.getObjectByName('Fence', true),
+      model.scene.getObjectByName('FencePhysics', true),
+      moveCoefficient,
+    );
+    //House
+    initStaticModel(
+      scene,
+      model.scene.getObjectByName('House', true),
+      model.scene.getObjectByName('HousePhysics', true),
+      moveCoefficient,
+    );
+    //WoodPile
+    initStaticModel(
+      scene,
+      model.scene.getObjectByName('WoodPile', true),
+      model.scene.getObjectByName('WoodPilePhysics', true),
+      moveCoefficient,
+    );
+    //Grass
+    scene.add(model.scene.getObjectByName('Grass1010', true));
   });
 };
 PhysicsLoader('/Ammo/', () => MainScene());
