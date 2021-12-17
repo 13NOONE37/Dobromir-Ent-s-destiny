@@ -291,14 +291,8 @@ const MainScene = () => {
     mass = 0,
     positionCoefficient = { x: 0, y: 0, z: 0 },
     rotationCoefficient = { x: 0, y: 180, z: 0 },
-    scaleCoefficient = { x: 0, y: 0, z: 0 },
+    scaleCoefficient = { x: 1, y: 1, z: 1 },
   ) => {
-    // visibleObj.position.set(0, 0, 0);
-    // visibleObj.rotation.set(0, 0, 0);
-    // physicalObj.position.set(0,0,0);
-    // physicalObj.rotation.set(0, 0, 0);
-
-    console.log(visibleObj);
     const position = {
       x: visibleObj.position.x + positionCoefficient.x,
       y: visibleObj.position.y + positionCoefficient.y,
@@ -324,10 +318,21 @@ const MainScene = () => {
     visibleObject.position.set(position.x, position.y, position.z);
     physicalObject.position.set(position.x, position.y, position.z);
     //Apply Rotation
-    // visibleObject.rotation.reorder('YXZ');
-    // visibleObject.rotation.set(rotation.x, rotation.y, rotation.z);
-    // physicalObject.rotation.reorder('YXZ');
-    // physicalObject.rotation.set(rotation.x, rotation.y, rotation.z);
+    visibleObject.rotation.reorder('YXZ');
+    visibleObject.rotation.set(rotation.x, rotation.y, rotation.z);
+    physicalObject.rotation.reorder('YXZ');
+    physicalObject.rotation.set(rotation.x, rotation.y, rotation.z);
+    //Apply Scale
+    visibleObject.scale.set(
+      scaleCoefficient.x,
+      scaleCoefficient.y,
+      scaleCoefficient.z,
+    );
+    physicalObject.scale.set(
+      scaleCoefficient.x,
+      scaleCoefficient.y,
+      scaleCoefficient.z,
+    );
 
     currentScene.add(visibleObject);
     physics.add.existing(physicalObject, {
@@ -338,56 +343,82 @@ const MainScene = () => {
     });
   };
 
-  modelLoader.load('/Assets/JohnFarmTest.glb', (model) => {
-    // scene.add(model.scene);
-    // model.scene.traverse((item) => {
-    //   if (item.name.indexOf('Physics') != -1) {
-    //     item.remove();
-    //   }
-    // });
-
-    const moveCoefficient = { x: -100, y: 0.35, z: 0 };
+  modelLoader.load('/Assets/Farm.glb', (model) => {
     console.log(model.scene);
     initStaticModel(
       scene,
       model.scene.getObjectByName('Fence', true),
       model.scene.getObjectByName('FencePhysics', true),
       0,
-      moveCoefficient,
+      { x: 10, y: -1.2, z: 0 },
+      { x: 0, y: -Math.PI * 0.5, z: 0 },
     );
-    //House
     initStaticModel(
       scene,
       model.scene.getObjectByName('House', true),
       model.scene.getObjectByName('HousePhysics', true),
       0,
-      moveCoefficient,
+      { x: 0, y: 6, z: -20 },
+      { x: 0, y: Math.PI * 0.5, z: 0 },
     );
-    //WoodPile
+    initStaticModel(
+      scene,
+      model.scene.getObjectByName('Ship', true),
+      model.scene.getObjectByName('ShipPhysics', true),
+      0,
+      { x: 0, y: 3.2, z: 0 },
+      { x: 0, y: 0, z: 0 },
+      { x: 2, y: 2, z: 2 },
+    );
     initStaticModel(
       scene,
       model.scene.getObjectByName('WoodPile', true),
       model.scene.getObjectByName('WoodPilePhysics', true),
       0,
-      moveCoefficient,
+      { x: 0, y: 0.1, z: 0 },
+      { x: 0, y: 0, z: 0 },
     );
-    //Trees
-    initStaticModel(
-      scene,
-      model.scene.getObjectByName('Oak1', true),
-      model.scene.getObjectByName('Oak1Physics', true),
-      0,
-      moveCoefficient,
-    );
-    initStaticModel(
-      scene,
-      model.scene.getObjectByName('Oak2', true),
-      model.scene.getObjectByName('Oak2Physics', true),
-      0,
-      moveCoefficient,
-    );
-    //Grass
-    scene.add(model.scene.getObjectByName('Grass1010', true));
+
+    // initStaticModel(
+    //   scene,
+    //   model.scene.getObjectByName('Fence', true),
+    //   model.scene.getObjectByName('FencePhysics', true),
+    //   0,
+    //   moveCoefficient,
+    // );
+    // //House
+    // initStaticModel(
+    //   scene,
+    //   model.scene.getObjectByName('House', true),
+    //   model.scene.getObjectByName('HousePhysics', true),
+    //   0,
+    //   moveCoefficient,
+    // );
+    // //WoodPile
+    // initStaticModel(
+    //   scene,
+    //   model.scene.getObjectByName('WoodPile', true),
+    //   model.scene.getObjectByName('WoodPilePhysics', true),
+    //   0,
+    //   moveCoefficient,
+    // );
+    // //Trees
+    // initStaticModel(
+    //   scene,
+    //   model.scene.getObjectByName('Oak1', true),
+    //   model.scene.getObjectByName('Oak1Physics', true),
+    //   0,
+    //   moveCoefficient,
+    // );
+    // initStaticModel(
+    //   scene,
+    //   model.scene.getObjectByName('Oak2', true),
+    //   model.scene.getObjectByName('Oak2Physics', true),
+    //   0,
+    //   moveCoefficient,
+    // );
+    // //Grass
+    // scene.add(model.scene.getObjectByName('Grass1010', true));
   });
 };
 PhysicsLoader('/Ammo/', () => MainScene());
