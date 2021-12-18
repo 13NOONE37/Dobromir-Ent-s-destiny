@@ -183,7 +183,7 @@ const MainScene = () => {
     tick();
   };
   const physics = new AmmoPhysics(scene);
-  physics.debug.enable(true);
+  // physics.debug.enable(true);
 
   const { factory } = physics; // the factory will make/add object without physics
 
@@ -268,7 +268,7 @@ const MainScene = () => {
       shape: 'capsule',
       radius: 1.55,
       height: 1.25,
-      offset: { y: -1.95 },
+      offset: { y: -2.3 },
     });
     czesio.body.setFriction(0.8);
     czesio.body.setAngularFactor(0, 0, 0);
@@ -344,7 +344,14 @@ const MainScene = () => {
   };
 
   modelLoader.load('/Assets/Farm.glb', (model) => {
-    console.log(model.scene);
+    console.log(model.scene.children);
+    //Grass
+    const grass = model.scene.getObjectByName('Grass1010', true);
+    grass.position.set(20, 0.5, 0);
+    grass.rotateY(Math.PI * 0.5);
+    scene.add(grass);
+
+    //Statics
     initStaticModel(
       scene,
       model.scene.getObjectByName('Fence', true),
@@ -363,62 +370,51 @@ const MainScene = () => {
     );
     initStaticModel(
       scene,
-      model.scene.getObjectByName('Ship', true),
-      model.scene.getObjectByName('ShipPhysics', true),
-      0,
-      { x: 0, y: 3.2, z: 0 },
-      { x: 0, y: 0, z: 0 },
-      { x: 2, y: 2, z: 2 },
-    );
-    initStaticModel(
-      scene,
       model.scene.getObjectByName('WoodPile', true),
       model.scene.getObjectByName('WoodPilePhysics', true),
       0,
       { x: 0, y: 0.1, z: 0 },
       { x: 0, y: 0, z: 0 },
     );
+    // TODO: we have to make it dynamic object
+    // initStaticModel(
+    //   scene,
+    //   model.scene.getObjectByName('Ship', true),
+    //   model.scene.getObjectByName('ShipPhysics', true),
+    //   0,
+    //   { x: 0, y: 3.2, z: 0 },
+    //   { x: 0, y: 0, z: 0 },
+    //   { x: 2, y: 2, z: 2 },
+    // );
 
-    // initStaticModel(
-    //   scene,
-    //   model.scene.getObjectByName('Fence', true),
-    //   model.scene.getObjectByName('FencePhysics', true),
-    //   0,
-    //   moveCoefficient,
-    // );
-    // //House
-    // initStaticModel(
-    //   scene,
-    //   model.scene.getObjectByName('House', true),
-    //   model.scene.getObjectByName('HousePhysics', true),
-    //   0,
-    //   moveCoefficient,
-    // );
-    // //WoodPile
-    // initStaticModel(
-    //   scene,
-    //   model.scene.getObjectByName('WoodPile', true),
-    //   model.scene.getObjectByName('WoodPilePhysics', true),
-    //   0,
-    //   moveCoefficient,
-    // );
-    // //Trees
-    // initStaticModel(
-    //   scene,
-    //   model.scene.getObjectByName('Oak1', true),
-    //   model.scene.getObjectByName('Oak1Physics', true),
-    //   0,
-    //   moveCoefficient,
-    // );
-    // initStaticModel(
-    //   scene,
-    //   model.scene.getObjectByName('Oak2', true),
-    //   model.scene.getObjectByName('Oak2Physics', true),
-    //   0,
-    //   moveCoefficient,
-    // );
-    // //Grass
-    // scene.add(model.scene.getObjectByName('Grass1010', true));
+    //Trees
+    initStaticModel(
+      scene,
+      model.scene.getObjectByName('Oak1', true),
+      model.scene.getObjectByName('Oak1Physics', true),
+      0,
+      {
+        x: 55,
+        y: 0,
+        z: -20,
+      },
+    );
+    initStaticModel(
+      scene,
+      model.scene.getObjectByName('Oak2', true),
+      model.scene.getObjectByName('Oak2Physics', true),
+      0,
+      {
+        x: 55,
+        y: 0,
+        z: 15,
+      },
+      {
+        x: 0,
+        y: Math.PI * 0.75,
+        z: 0,
+      },
+    );
   });
 };
 PhysicsLoader('/Ammo/', () => MainScene());
