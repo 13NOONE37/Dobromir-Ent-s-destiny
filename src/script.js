@@ -183,7 +183,7 @@ const MainScene = () => {
     tick();
   };
   const physics = new AmmoPhysics(scene);
-  // physics.debug.enable(true);
+  physics.debug.enable(true);
 
   const { factory } = physics; // the factory will make/add object without physics
 
@@ -292,21 +292,17 @@ const MainScene = () => {
     positionCoefficient = { x: 0, y: 0, z: 0 },
     rotationCoefficient = { x: 0, y: 180, z: 0 },
     scaleCoefficient = { x: 1, y: 1, z: 1 },
+    moveCeo = { x: 0, y: 0, z: 0 },
   ) => {
     const position = {
-      x: visibleObj.position.x + positionCoefficient.x,
-      y: visibleObj.position.y + positionCoefficient.y,
-      z: visibleObj.position.z + positionCoefficient.z,
+      x: visibleObj.position.x + positionCoefficient.x + moveCeo.x,
+      y: visibleObj.position.y + positionCoefficient.y + moveCeo.y,
+      z: visibleObj.position.z + positionCoefficient.z + moveCeo.z,
     };
     const rotation = {
       x: visibleObj.rotation.x + rotationCoefficient.x,
       y: visibleObj.rotation.y + rotationCoefficient.y,
       z: visibleObj.rotation.z + rotationCoefficient.z,
-    };
-    const scale = {
-      x: visibleObj.scale.x + scaleCoefficient.x,
-      y: visibleObj.scale.y + scaleCoefficient.y,
-      z: visibleObj.scale.z + scaleCoefficient.z,
     };
 
     const visibleObject = new ExtendedObject3D();
@@ -344,10 +340,10 @@ const MainScene = () => {
   };
 
   modelLoader.load('/Assets/Farm.glb', (model) => {
-    console.log(model.scene.children);
+    const moveAllTo = { x: 0, y: 0, z: 0 };
     //Grass
     const grass = model.scene.getObjectByName('Grass1010', true);
-    grass.position.set(20, 0.5, 0);
+    grass.position.set(20 + moveAllTo.x, 0.5 + moveAllTo.y, 0 + moveAllTo.z);
     grass.rotateY(Math.PI * 0.5);
     scene.add(grass);
 
@@ -359,6 +355,8 @@ const MainScene = () => {
       0,
       { x: 10, y: -1.2, z: 0 },
       { x: 0, y: -Math.PI * 0.5, z: 0 },
+      undefined,
+      moveAllTo,
     );
     initStaticModel(
       scene,
@@ -367,26 +365,19 @@ const MainScene = () => {
       0,
       { x: 0, y: 6, z: -20 },
       { x: 0, y: Math.PI * 0.5, z: 0 },
+      undefined,
+      moveAllTo,
     );
     initStaticModel(
       scene,
       model.scene.getObjectByName('WoodPile', true),
       model.scene.getObjectByName('WoodPilePhysics', true),
       0,
-      { x: 0, y: 0.1, z: 0 },
-      { x: 0, y: 0, z: 0 },
+      { x: -10, y: 0.45, z: -22 },
+      { x: 0, y: Math.PI * 0.5, z: 0 },
+      undefined,
+      moveAllTo,
     );
-    // TODO: we have to make it dynamic object
-    // initStaticModel(
-    //   scene,
-    //   model.scene.getObjectByName('Ship', true),
-    //   model.scene.getObjectByName('ShipPhysics', true),
-    //   0,
-    //   { x: 0, y: 3.2, z: 0 },
-    //   { x: 0, y: 0, z: 0 },
-    //   { x: 2, y: 2, z: 2 },
-    // );
-
     //Trees
     initStaticModel(
       scene,
@@ -398,6 +389,9 @@ const MainScene = () => {
         y: 0,
         z: -20,
       },
+      undefined,
+      undefined,
+      moveAllTo,
     );
     initStaticModel(
       scene,
@@ -414,7 +408,87 @@ const MainScene = () => {
         y: Math.PI * 0.75,
         z: 0,
       },
+      undefined,
+      moveAllTo,
     );
+
+    const appleTree1 = model.scene.getObjectByName('AppleTree2', true);
+    const appleTree2 = model.scene.getObjectByName('AppleTree2', true);
+    const appleTree1Phy = model.scene.getObjectByName(
+      'AppleTree1Physics',
+      true,
+    );
+    const appleTree2Phy = model.scene.getObjectByName(
+      'AppleTree2Physics',
+      true,
+    );
+    initStaticModel(
+      scene,
+      appleTree1.clone(),
+      appleTree1Phy.clone(),
+      0,
+      {
+        x: -16,
+        y: 0.35,
+        z: 22,
+      },
+      undefined,
+      undefined,
+      moveAllTo,
+    );
+    initStaticModel(
+      scene,
+      appleTree2.clone(),
+      appleTree2Phy.clone(),
+      0,
+      {
+        x: -8,
+        y: 0.35,
+        z: 22,
+      },
+      undefined,
+      undefined,
+      moveAllTo,
+    );
+    initStaticModel(
+      scene,
+      appleTree1.clone(),
+      appleTree1Phy.clone(),
+      0,
+      {
+        x: 0,
+        y: 0.35,
+        z: 22,
+      },
+      undefined,
+      undefined,
+      moveAllTo,
+    );
+    initStaticModel(
+      scene,
+      appleTree2.clone(),
+      appleTree2Phy.clone(),
+      0,
+      {
+        x: 8,
+        y: 0.35,
+        z: 22,
+      },
+      undefined,
+      undefined,
+      moveAllTo,
+    );
+
+    // TODO: we have to make it dynamic object
+    // initStaticModel(
+    //   scene,
+    //   model.scene.getObjectByName('Ship', true),
+    //   model.scene.getObjectByName('ShipPhysics', true),
+    //   0,
+    //   { x: 0, y: 3.2, z: 0 },
+    //   { x: 0, y: 0, z: 0 },
+    //   { x: 2, y: 2, z: 2 },
+    // );
   });
 };
 PhysicsLoader('/Ammo/', () => MainScene());
