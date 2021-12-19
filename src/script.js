@@ -85,12 +85,10 @@ const MainScene = () => {
     // sunLight.target = currentControlObject; // camera look at controlObject
   };
 
-  let speed = { value: 1.7 };
-  gui.add(speed, 'value').min(1).max(5);
+  let xspeed = { value: 1.7 };
+  gui.add(xspeed, 'value').min(1).max(5);
 
   const objectControler = (elapsedTime) => {
-    const moveCharacter = (0.5 - keys.mouse.x / window.innerWidth) * Math.PI;
-    const theta = czesio.world.theta;
     if (
       czesioWalkAction &&
       !keys.forward &&
@@ -98,42 +96,29 @@ const MainScene = () => {
       !keys.left &&
       !keys.right
     ) {
-      // turn player
-      //  if (!isIdle) {
-      // const directionTheta = Math.atan2(walkDirection.x, walkDirection.z) + Math.PI
-      // const playerTheta = czesio.world.theta + Math.PI
-      // const diff = directionTheta - playerTheta
-      // if (diff > 0.25) czesio.body.setAngularVelocityY(10)
-      // if (diff < -0.25) czesio.body.setAngularVelocityY(-10)
-      // }
-      czesio.body.setVelocity(0, 0, 0);
       czesioWalkAction.stop();
       czesioIdleAction.play();
     }
 
+    const speed = xspeed.value;
+    const rotation = czesio.getWorldDirection(czesio.rotation.toVector3());
+    const theta = Math.atan2(rotation.x, rotation.z);
+
     if (keys.forward) {
-      czesio.body.setVelocityZ(speed.value);
-      czesioWalkAction.play();
-      czesioIdleAction.stop();
-    }
-    if (keys.backward) {
-      // czesio.translateOnAxis(new THREE.Vector3(0, 0, -1), 0.1);
-      czesio.body.setVelocityZ(-speed.value);
+      const x = Math.sin(theta) * speed,
+        y = czesio.body.velocity.y,
+        z = Math.cos(theta) * speed;
+
+      czesio.body.setVelocity(x, y, z);
       czesioWalkAction.play();
       czesioIdleAction.stop();
     }
     if (keys.left) {
-      czesio.rotateY(Math.PI * 0.5);
-      czesio.body.setVelocityX(speed.value);
-      czesioWalkAction.play();
-      czesioIdleAction.stop();
-    }
-
-    if (keys.right) {
-      czesio.rotateY(-Math.PI * 0.5);
-      czesio.body.setVelocityX(-speed.value);
-      czesioWalkAction.play();
-      czesioIdleAction.stop();
+      czesio.body.setAngularVelocityY(2);
+    } else if (keys.right) {
+      czesio.body.setAngularVelocityY(-2);
+    } else {
+      czesio.body.setAngularVelocityY(0);
     }
     if (keys.space && !keys.isJumping) {
       czesioJumpAction.stop();
@@ -144,6 +129,13 @@ const MainScene = () => {
       }, 200);
     }
 
+    //Sprint
+    if (keys.shift) {
+      xspeed.value = 3.7;
+    }
+    if (!keys.shift) {
+      xspeed.value = 1.7;
+    }
     //Może Lepiej zrealizować te funkcje poprzez wysyłanie postaci aktualnie grywalnej do kontrolera i poruszania przez gsap
   };
   const updateEnviorment = (currentTime, deltaTime) => {
@@ -151,7 +143,7 @@ const MainScene = () => {
     controls.update();
     mixer && mixer.update(deltaTime);
 
-    // currentControlObject && thirdPersonCamera();
+    currentControlObject && thirdPersonCamera();
     //Sun update
     skyEffectControler.elevation = ((currentTime / 50) % 180) + 1;
     skyGuiChanged();
