@@ -102,6 +102,7 @@ const MainScene = () => {
 
     const speed = xspeed.value;
     const rotation = czesio.getWorldDirection(czesio.rotation.toVector3());
+
     const theta = Math.atan2(rotation.x, rotation.z);
 
     if (keys.forward) {
@@ -113,19 +114,27 @@ const MainScene = () => {
       czesioWalkAction.play();
       czesioIdleAction.stop();
     }
+    if (keys.backward) {
+      const x = -Math.sin(theta) * speed,
+        y = czesio.body.velocity.y,
+        z = -Math.cos(theta) * speed;
+      czesio.body.setVelocity(x, y, z);
+      czesioWalkAction.play();
+      czesioIdleAction.stop();
+    }
     if (keys.left) {
-      czesio.body.setAngularVelocityY(2);
+      czesio.body.setAngularVelocityY(1.5);
     } else if (keys.right) {
-      czesio.body.setAngularVelocityY(-2);
+      czesio.body.setAngularVelocityY(-1.5);
     } else {
       czesio.body.setAngularVelocityY(0);
     }
     if (keys.space && !keys.isJumping) {
       czesioJumpAction.stop();
       czesioJumpAction.play();
-      console.log(czesio.world.theta);
       setTimeout(() => {
-        czesio.body.applyForceY(16);
+        czesio.body.setVelocityY(10);
+        // czesio.body.applyForceY(16);
       }, 200);
     }
 
@@ -255,6 +264,7 @@ const MainScene = () => {
 
     czesio = new ExtendedObject3D();
     czesio.add(children);
+    // czesio.scale.set(0.4, 0.4, 0.4);
 
     scene.add(czesio);
     physics.add.existing(czesio, {
@@ -266,7 +276,6 @@ const MainScene = () => {
     });
     czesio.body.setFriction(0.8);
     czesio.body.setAngularFactor(0, 0, 0);
-    czesio.body.setAngularVelocityY(0);
 
     mixer = new THREE.AnimationMixer(czesio);
 
