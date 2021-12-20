@@ -330,6 +330,17 @@ const MainScene = () => {
       undefined,
       moveAllTo,
     );
+    InitStaticModel(
+      physics,
+      scene,
+      model.scene.getObjectByName('Weel', true),
+      model.scene.getObjectByName('WeelPhysics', true),
+      0,
+      { x: -20, y: 0.5, z: -5 },
+      { x: 0, y: Math.PI * 0.5, z: 0 },
+      undefined,
+      moveAllTo,
+    );
     //Trees
     InitStaticModel(
       physics,
