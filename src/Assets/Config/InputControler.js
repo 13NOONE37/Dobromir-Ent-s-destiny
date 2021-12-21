@@ -6,6 +6,8 @@ const initInputControler = () => {
     left: false,
     right: false,
     space: false,
+    canJump: true,
+    isJumping: false,
     shift: false,
     action: false,
   };

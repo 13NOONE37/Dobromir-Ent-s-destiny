@@ -129,13 +129,16 @@ const MainScene = () => {
     } else {
       czesio.body.setAngularVelocityY(0);
     }
-    if (keys.space && !keys.isJumping) {
+    if (keys.space && keys.canJump) {
+      keys.canJump = false;
+      keys.isJumping = true;
       czesioJumpAction.stop();
       czesioJumpAction.play();
       setTimeout(() => {
         czesio.body.setVelocityY(10);
-        // czesio.body.applyForceY(16);
+        keys.canJump = true;
       }, 200);
+      setTimeout(() => (keys.isJumping = false), 200);
     }
 
     //Sprint
