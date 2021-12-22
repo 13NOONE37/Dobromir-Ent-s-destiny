@@ -76,7 +76,7 @@ const initInputControler = () => {
   };
 
   //!--!-Keyboard
-  window.addEventListener('keydown', handleKeyDown);
+  window.addEventListener('keydown', handleKeyDown, true);
   window.addEventListener('keyup', handleKeyUp);
 
   //!--!-Mouse

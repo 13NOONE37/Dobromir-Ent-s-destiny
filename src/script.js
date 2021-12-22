@@ -2,7 +2,7 @@ import './style.css';
 import * as THREE from 'three';
 import Stats from 'stats.js';
 import { gsap } from 'gsap';
-
+import { Water } from 'three/examples/jsm/objects/Water';
 import initWeatherControler from './Assets/Config/WeatherControler';
 import initLoadingManagers from './Assets/Config/LoadingManagers';
 import initBasics from './Assets/Config/InitBasics';
@@ -162,7 +162,12 @@ const MainScene = () => {
     sunLight.position.x = sunObject.x * 100;
     sunLight.position.y = sunObject.y * 100; //Original 1000
     sunLight.position.z = sunObject.z * 100;
+
+    //water
+    water.material.uniforms['time'].value += 1.0 / 60.0;
+    water.material.uniforms['sunDirection'].value.copy(sunLight).normalize();
   };
+
   const tick = () => {
     stats.begin();
     const elapsedTime = clock.getElapsedTime();
@@ -201,8 +206,27 @@ const MainScene = () => {
   const keys = initInputControler();
 
   /*!---Content--! */
+  const waterGeometry = new THREE.CircleBufferGeometry(10, 10);
+  const water = new Water(waterGeometry, {
+    textureWidth: 512,
+    textureHeight: 512,
+    waterNormals: new THREE.TextureLoader().load(
+      '/waternormals.jpg',
+      function (texture) {
+        texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+      },
+    ),
+    sunDirection: new THREE.Vector3(),
+    sunColor: 0xffffff,
+    waterColor: 0x001e0f,
+    distortionScale: 3.7,
+    fog: scene.fog !== undefined,
+  });
 
-  // GenerateGround(textureLoader, scene, physics);
+  water.rotation.x = -Math.PI / 2;
+  water.position.y = 1;
+
+  scene.add(water);
 
   const groundMaterial = new THREE.MeshStandardMaterial({
     color: new THREE.Color('#ff781f'),

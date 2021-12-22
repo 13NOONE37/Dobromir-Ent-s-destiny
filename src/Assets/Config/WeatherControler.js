@@ -1,10 +1,12 @@
-import * as THREE from "three";
-import { MeshBasicMaterial } from "three";
-import { Sky } from "three/examples/jsm/objects/Sky";
+import * as THREE from 'three';
+import { MeshBasicMaterial } from 'three';
+import { Sky } from 'three/examples/jsm/objects/Sky';
 
 const initWeatherControler = (renderer, scene, gui, modelLoader) => {
   //!--> LIGHTS
 
+  //Fog
+  scene.fog = new THREE.FogExp2(0xffffff, 0.0025);
   //Ambient
   const ambientLight = new THREE.AmbientLight(0xffffff, 1);
   scene.add(ambientLight);
@@ -40,7 +42,7 @@ const initWeatherControler = (renderer, scene, gui, modelLoader) => {
   scene.add(
     directionalLight,
     new THREE.DirectionalLightHelper(directionalLight),
-    new THREE.CameraHelper(directionalLight.shadow.camera)
+    new THREE.CameraHelper(directionalLight.shadow.camera),
   );
 
   //SKY
@@ -74,50 +76,50 @@ const initWeatherControler = (renderer, scene, gui, modelLoader) => {
 
     guiChanged = () => {
       const uniforms = sky.material.uniforms;
-      uniforms["turbidity"].value = effectController.turbidity;
-      uniforms["rayleigh"].value = effectController.rayleigh;
-      uniforms["mieCoefficient"].value = effectController.mieCoefficient;
-      uniforms["mieDirectionalG"].value = effectController.mieDirectionalG;
+      uniforms['turbidity'].value = effectController.turbidity;
+      uniforms['rayleigh'].value = effectController.rayleigh;
+      uniforms['mieCoefficient'].value = effectController.mieCoefficient;
+      uniforms['mieDirectionalG'].value = effectController.mieDirectionalG;
 
       const phi = THREE.MathUtils.degToRad(90 - effectController.elevation);
       const theta = THREE.MathUtils.degToRad(effectController.azimuth);
 
       sun.setFromSphericalCoords(1, phi, theta);
 
-      uniforms["sunPosition"].value.copy(sun);
+      uniforms['sunPosition'].value.copy(sun);
 
       renderer.toneMappingExposure = effectController.exposure;
     };
 
-    const SkyProperties = gui.addFolder("Sky");
-    SkyProperties.add(effectController, "turbidity", 0.0, 20.0, 0.1).onChange(
-      guiChanged
+    const SkyProperties = gui.addFolder('Sky');
+    SkyProperties.add(effectController, 'turbidity', 0.0, 20.0, 0.1).onChange(
+      guiChanged,
     );
-    SkyProperties.add(effectController, "rayleigh", 0.0, 4, 0.001).onChange(
-      guiChanged
+    SkyProperties.add(effectController, 'rayleigh', 0.0, 4, 0.001).onChange(
+      guiChanged,
     );
     SkyProperties.add(
       effectController,
-      "mieCoefficient",
+      'mieCoefficient',
       0.0,
       0.1,
-      0.001
+      0.001,
     ).onChange(guiChanged);
     SkyProperties.add(
       effectController,
-      "mieDirectionalG",
+      'mieDirectionalG',
       0.0,
       1,
-      0.001
+      0.001,
     ).onChange(guiChanged);
-    SkyProperties.add(effectController, "elevation", 0, 180, 0.1).onChange(
-      guiChanged
+    SkyProperties.add(effectController, 'elevation', 0, 180, 0.1).onChange(
+      guiChanged,
     );
-    SkyProperties.add(effectController, "azimuth", -180, 180, 0.1).onChange(
-      guiChanged
+    SkyProperties.add(effectController, 'azimuth', -180, 180, 0.1).onChange(
+      guiChanged,
     );
-    SkyProperties.add(effectController, "exposure", 0, 1, 0.0001).onChange(
-      guiChanged
+    SkyProperties.add(effectController, 'exposure', 0, 1, 0.0001).onChange(
+      guiChanged,
     );
 
     guiChanged();
@@ -153,7 +155,7 @@ const initWeatherControler = (renderer, scene, gui, modelLoader) => {
 
         const scaleOfCloud = Math.max(
           10,
-          Math.random() * cloudDebug.scaleCoefficient
+          Math.random() * cloudDebug.scaleCoefficient,
         );
         cloud.scale.set(scaleOfCloud, scaleOfCloud, scaleOfCloud);
         cloud.rotation.x = Math.random() * Math.PI;
@@ -165,9 +167,9 @@ const initWeatherControler = (renderer, scene, gui, modelLoader) => {
         scene.add(cloud);
       }
     };
-    modelLoader.load("/Assets/Enviorment/cloud1.glb", (cloud11) => {
-      modelLoader.load("/Assets/Enviorment/cloud2.glb", (cloud22) => {
-        modelLoader.load("/Assets/Enviorment/cloud3.glb", (cloud33) => {
+    modelLoader.load('/Assets/Enviorment/cloud1.glb', (cloud11) => {
+      modelLoader.load('/Assets/Enviorment/cloud2.glb', (cloud22) => {
+        modelLoader.load('/Assets/Enviorment/cloud3.glb', (cloud33) => {
           cloud1 = cloud11.scene;
           cloud2 = cloud22.scene;
           cloud3 = cloud33.scene;
