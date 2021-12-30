@@ -206,7 +206,9 @@ const MainScene = () => {
   const keys = initInputControler();
 
   /*!---Content--! */
+
   const waterGeometry = new THREE.CircleBufferGeometry(10, 10);
+
   const water = new Water(waterGeometry, {
     textureWidth: 512,
     textureHeight: 512,
@@ -224,9 +226,41 @@ const MainScene = () => {
   });
 
   water.rotation.x = -Math.PI / 2;
-  water.position.y = 1;
+  water.position.y = 0.1;
 
   scene.add(water);
+
+  // const torch = new THREE.Group();
+  // const point = new THREE.PointLight(0xff7700, 150, 1000);
+  // point.position.y = 1;
+  // gui.add(point, 'intensity').name('point light intensity:').min(0).max(1000);
+  // torch.add(point, new THREE.PointLightHelper(point));
+
+  // const octGeometry = new THREE.OctahedronBufferGeometry();
+  // const octMaterial = new THREE.MeshLambertMaterial({ color: 0xff7700 });
+
+  // const torchOffset = 0.2;
+  // const torchCount = 12;
+  // const tl = gsap.timeline();
+  // tl.repeat(-1);
+  // // tl.fromTo(torch.rotation, { y: 0 }, { y: Math.PI, duration: 10 });
+
+  // for (let i = 0; i < torchCount; i++) {
+  //   const oct = new THREE.Mesh(octGeometry, octMaterial);
+  //   oct.position.x = Math.sin(i) * torchOffset;
+  //   oct.position.z = Math.cos(-i) * torchOffset;
+  //   oct.scale.set(0.2, 0.4, 0.2);
+  //   torch.add(oct);
+  //   tl.to(oct.position, { duration: .5, y: 0 + Math.sin(Math.random()) }).to(
+  //     oct.position,
+  //     {
+  //       duration: .5,
+  //       y: 0 - Math.sin(Math.random()),
+  //     },
+  //   );
+  // }
+  // torch.position.set(0, 3, 0);
+  // scene.add(torch);
 
   const groundMaterial = new THREE.MeshStandardMaterial({
     color: new THREE.Color('#ff781f'),
@@ -476,7 +510,28 @@ const MainScene = () => {
     );
 
     // TODO: we have to make it dynamic object
-    // InitStaticModel(physics,
+
+    const ship = model.scene.getObjectByName('Ship', true);
+    ship.position.set(0, 2, 0);
+    ship.scale.set(2, 2, 2);
+    scene.add(ship);
+    physics.add.existing(ship, {
+      shape: 'compund',
+      compound: [
+        // nose
+        { shape: 'box', width: 0.5, height: 1, depth: 0.4, y: -0.5, z: 0.5 },
+        // ears
+        { shape: 'box', width: 2.4, height: 0.6, depth: 0.4, z: -0.4, y: 0.2 },
+        // head back
+        { shape: 'sphere', radius: 0.65, z: -0.25, y: 0.35 },
+        // head front
+        { shape: 'box', width: 1.5, height: 0.8, depth: 1, y: 0.2, z: 0.2 },
+      ],
+
+      mass: 1000,
+    });
+    // InitStaticModel(
+    //   physics,
     //   scene,
     //   model.scene.getObjectByName('Ship', true),
     //   model.scene.getObjectByName('ShipPhysics', true),
