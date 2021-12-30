@@ -18,9 +18,13 @@ import {
 } from '@enable3d/ammo-physics';
 
 import InitStaticModel from './Assets/Utils/InitStaticModel';
+import ThirdPersonCamera from './Assets/Config/ThirdPersonCamera';
 
 const MainScene = () => {
   const [renderer, camera, controls, scene, gui] = initBasics();
+
+  let currentControlObject = null,
+    currentControlObjectType = 'Character';
 
   //Animate
   let stats = new Stats();
@@ -48,38 +52,6 @@ const MainScene = () => {
   cameraFolder.add(cameraDebug, 'offsetY').min(-100).max(100).name('offsetY');
   cameraFolder.add(cameraDebug, 'offsetZ').min(-100).max(100).name('offsetZ');
 
-  let currentControlObject = null;
-  const thirdPersonCamera = () => {
-    const calculateIdealOffset = () => {
-      const idealOffset = new THREE.Vector3(
-        cameraDebug.offsetX,
-        cameraDebug.offsetY,
-        cameraDebug.offsetZ,
-      );
-      idealOffset.applyQuaternion(currentControlObject.parent.quaternion);
-      idealOffset.add(currentControlObject.parent.position);
-
-      return idealOffset;
-    };
-    const calculateIdealLookAt = () => {
-      const idealLookAt = new THREE.Vector3(
-        cameraDebug.lookX,
-        cameraDebug.lookY,
-        cameraDebug.lookZ,
-      );
-      idealLookAt.applyQuaternion(currentControlObject.parent.quaternion);
-      idealLookAt.add(currentControlObject.parent.position);
-
-      return idealLookAt;
-    };
-
-    const idealOffset = calculateIdealOffset();
-    const idealLookAt = calculateIdealLookAt();
-
-    camera.position.copy(idealOffset);
-    camera.lookAt(idealLookAt);
-  };
-
   const renderBasic = () => {
     renderer.render(scene, camera);
     // sunLight.target = currentControlObject; // camera look at controlObject
@@ -88,65 +60,75 @@ const MainScene = () => {
   let xspeed = { value: 1.7 };
   gui.add(xspeed, 'value').min(1).max(5);
 
-  const objectControler = (elapsedTime) => {
-    if (
-      czesioWalkAction &&
-      !keys.forward &&
-      !keys.backward &&
-      !keys.left &&
-      !keys.right
-    ) {
-      czesioWalkAction.stop();
-      czesioIdleAction.play();
-    }
+  const objectControler = (elapsedTime, controlObject, typeOfObject) => {
+    if (typeOfObject == 'Character') {
+      //Dobromir
+      if (
+        czesioWalkAction &&
+        !keys.forward &&
+        !keys.backward &&
+        !keys.left &&
+        !keys.right
+      ) {
+        czesioWalkAction.stop();
+        czesioIdleAction.play();
+      }
 
-    const speed = xspeed.value;
-    const rotation = czesio.getWorldDirection(czesio.rotation.toVector3());
+      const speed = xspeed.value;
+      const rotation = czesio.getWorldDirection(czesio.rotation.toVector3());
 
-    const theta = Math.atan2(rotation.x, rotation.z);
+      const theta = Math.atan2(rotation.x, rotation.z);
 
-    if (keys.forward) {
-      const x = Math.sin(theta) * speed,
-        y = czesio.body.velocity.y,
-        z = Math.cos(theta) * speed;
+      if (keys.forward) {
+        console.log(controlObject);
+        const x = Math.sin(theta) * speed,
+          y = czesio.body.velocity.y,
+          z = Math.cos(theta) * speed;
 
-      czesio.body.setVelocity(x, y, z);
-      czesioWalkAction.play();
-      czesioIdleAction.stop();
-    }
-    if (keys.backward) {
-      const x = -Math.sin(theta) * speed,
-        y = czesio.body.velocity.y,
-        z = -Math.cos(theta) * speed;
-      czesio.body.setVelocity(x, y, z);
-      czesioWalkAction.play();
-      czesioIdleAction.stop();
-    }
-    if (keys.left) {
-      czesio.body.setAngularVelocityY(1.5);
-    } else if (keys.right) {
-      czesio.body.setAngularVelocityY(-1.5);
-    } else {
-      czesio.body.setAngularVelocityY(0);
-    }
-    if (keys.space && keys.canJump) {
-      keys.canJump = false;
-      keys.isJumping = true;
-      czesioJumpAction.stop();
-      czesioJumpAction.play();
-      setTimeout(() => {
-        czesio.body.setVelocityY(10);
-        keys.canJump = true;
-      }, 200);
-      setTimeout(() => (keys.isJumping = false), 200);
-    }
+        czesio.body.setVelocity(x, y, z);
+        czesioWalkAction.play();
+        czesioIdleAction.stop();
+      }
+      if (keys.backward) {
+        const x = -Math.sin(theta) * speed,
+          y = czesio.body.velocity.y,
+          z = -Math.cos(theta) * speed;
+        czesio.body.setVelocity(x, y, z);
+        czesioWalkAction.play();
+        czesioIdleAction.stop();
+      }
+      if (keys.left) {
+        czesio.body.setAngularVelocityY(1.5);
+      } else if (keys.right) {
+        czesio.body.setAngularVelocityY(-1.5);
+      } else {
+        czesio.body.setAngularVelocityY(0);
+      }
+      if (keys.space && keys.canJump) {
+        keys.canJump = false;
+        keys.isJumping = true;
+        czesioJumpAction.stop();
+        czesioJumpAction.play();
+        setTimeout(() => {
+          czesio.body.setVelocityY(10);
+          keys.canJump = true;
+        }, 200);
+        setTimeout(() => (keys.isJumping = false), 200);
+      }
 
-    //Sprint
-    if (keys.shift) {
-      xspeed.value = 3.7;
+      //Sprint
+      if (keys.shift) {
+        xspeed.value = 3.7;
+      }
+      if (!keys.shift) {
+        xspeed.value = 1.7;
+      }
     }
-    if (!keys.shift) {
-      xspeed.value = 1.7;
+    if (typeOfObject == 'Ship') {
+      //Ship
+    }
+    if (typeOfObject == 'Car') {
+      //Ship
     }
     //Może Lepiej zrealizować te funkcje poprzez wysyłanie postaci aktualnie grywalnej do kontrolera i poruszania przez gsap
   };
@@ -155,7 +137,8 @@ const MainScene = () => {
     controls.update();
     mixer && mixer.update(deltaTime);
 
-    currentControlObject && thirdPersonCamera();
+    currentControlObject &&
+      ThirdPersonCamera(camera, currentControlObject, cameraDebug);
     //Sun update
     skyEffectControler.elevation = ((currentTime / 50) % 180) + 1;
     skyGuiChanged();
@@ -182,7 +165,11 @@ const MainScene = () => {
 
     // czesio.rotation.y = -x;
 
-    objectControler(elapsedTime);
+    objectControler(
+      elapsedTime,
+      currentControlObject,
+      currentControlObjectType,
+    );
     updateEnviorment(currentTime, deltaTime);
     renderBasic(deltaTime);
 
@@ -322,18 +309,20 @@ const MainScene = () => {
   modelLoader.load('/Assets/Characters/Czesio2.glb', (model) => {
     const children = model.scene.children[0];
     currentControlObject = children;
+    currentControlObjectType = 'Character';
 
+    //lookX:-1,y:-6,z:48,x:0,y:1.9:z:-3.7
     czesio = new ExtendedObject3D();
     czesio.add(children);
     // czesio.scale.set(0.4, 0.4, 0.4);
-
+    // czesio.position.y = 2;
     scene.add(czesio);
     physics.add.existing(czesio, {
       mass: 20,
       shape: 'capsule',
       radius: 1.55,
-      height: 1.25,
-      offset: { y: -2.3 },
+      height: czesio.scale.y,
+      offset: { y: -2.3 }, //-0.75
     });
     czesio.body.setFriction(0.8);
     czesio.body.setAngularFactor(0, 0, 0);
@@ -512,24 +501,32 @@ const MainScene = () => {
     // TODO: we have to make it dynamic object
 
     const ship = model.scene.getObjectByName('Ship', true);
-    ship.position.set(0, 2, 0);
+    ship.position.set(4, 1, 0);
     ship.scale.set(2, 2, 2);
+    ship.rotation.y = Math.PI * 0.5;
     scene.add(ship);
     physics.add.existing(ship, {
-      shape: 'compund',
-      compound: [
-        // nose
-        { shape: 'box', width: 0.5, height: 1, depth: 0.4, y: -0.5, z: 0.5 },
-        // ears
-        { shape: 'box', width: 2.4, height: 0.6, depth: 0.4, z: -0.4, y: 0.2 },
-        // head back
-        { shape: 'sphere', radius: 0.65, z: -0.25, y: 0.35 },
-        // head front
-        { shape: 'box', width: 1.5, height: 0.8, depth: 1, y: 0.2, z: 0.2 },
-      ],
+      shape: 'hull',
+      width: 6,
+      height: 3.2,
+      depth: 4.2,
+      // compound: [
+      //   {
+      //     shape: 'box',
+      //     width: 5.5,
+      //     height: 1,
+      //     depth: 3.4,
+      //     y: -0.5,
+      //     z: 5.5,
+      //   },
+      //   { shape: 'box', width: 3.4, height: 1.85, depth: 0.8, z: -0.4, y: 0.2 },
+      //   // { shape: 'box', width: 1.5, height: 0.8, depth: 1, y: 0.2, z: 0.2 },
+      // ],
 
       mass: 1000,
     });
+    // currentControlObject = ship;
+
     // InitStaticModel(
     //   physics,
     //   scene,
