@@ -19,6 +19,7 @@ import {
 
 import InitStaticModel from './Assets/Utils/InitStaticModel';
 import ThirdPersonCamera from './Assets/Config/ThirdPersonCamera';
+import { BoxBufferGeometry } from 'three';
 
 const MainScene = () => {
   const [renderer, camera, controls, scene, gui] = initBasics();
@@ -499,32 +500,103 @@ const MainScene = () => {
     );
 
     // TODO: we have to make it dynamic object
-
     const ship = model.scene.getObjectByName('Ship', true);
-    ship.position.set(4, 1, 0);
+    ship.position.set(4, 5, 0);
     ship.scale.set(2, 2, 2);
     ship.rotation.y = Math.PI * 0.5;
-    scene.add(ship);
-    physics.add.existing(ship, {
-      shape: 'hull',
-      width: 6,
-      height: 3.2,
-      depth: 4.2,
-      // compound: [
-      //   {
-      //     shape: 'box',
-      //     width: 5.5,
-      //     height: 1,
-      //     depth: 3.4,
-      //     y: -0.5,
-      //     z: 5.5,
-      //   },
-      //   { shape: 'box', width: 3.4, height: 1.85, depth: 0.8, z: -0.4, y: 0.2 },
-      //   // { shape: 'box', width: 1.5, height: 0.8, depth: 1, y: 0.2, z: 0.2 },
-      // ],
+    // scene.add(ship);
+    // physics.add.existing(ship, {
+    //   shape: 'hull',
 
-      mass: 1000,
-    });
+    //   mass: 1000,
+    // });
+
+    const createCompoundFromData = (group, data) => {
+      const universalMaterial = new THREE.MeshBasicMaterial({
+        wireframe: true,
+      });
+      data.forEach((item) => {
+        switch (item.type) {
+          case 'box': {
+            const box = new THREE.Mesh(
+              new BoxBufferGeometry(...item.geometry),
+              universalMaterial,
+            );
+            box.position.set(item.position.x, item.position.y, item.position.z);
+            group.add(box);
+            break;
+          }
+          case 'cylinder': {
+            const cylinder = new THREE.Mesh(
+              new THREE.CylinderBufferGeometry(...item.geometry),
+              universalMaterial,
+            );
+            cylinder.position.set(
+              item.position.x,
+              item.position.y,
+              item.position.z,
+            );
+            group.add(cylinder);
+            break;
+          }
+        }
+      });
+    };
+
+    const data = [
+      {
+        type: 'cylinder',
+        geometry: [
+          4, //radiusTop
+          4, //radiusBottom
+          2, //height
+          24, //radiusSegments
+        ],
+        position: {
+          x: 0,
+          z: 0,
+          y: 10,
+        },
+      },
+      {
+        type: 'cylinder',
+        geometry: [
+          4, //radiusTop
+          4, //radiusBottom
+          2, //height
+          24, //radiusSegments
+        ],
+        position: {
+          x: 0,
+          z: 0,
+          y: -10,
+        },
+      },
+      {
+        type: 'cylinder',
+        geometry: [
+          1, //radiusTop
+          1, //radiusBottom
+          20, //height
+          4, //radiusSegments
+        ],
+        position: {
+          x: 0,
+          z: 0,
+          y: 0,
+        },
+      },
+    ];
+    const wheel = new THREE.Group();
+    createCompoundFromData(wheel, data);
+
+    wheel.rotateZ(Math.PI / 2);
+    wheel.position.z += 20;
+    wheel.position.y += 6;
+
+    // scene.add(wheel);
+    // physics.add.existing(wheel, { mass: 1000 });
+    physics.add.existing(ship, { compound: wheel });
     // currentControlObject = ship;
 
     // InitStaticModel(
