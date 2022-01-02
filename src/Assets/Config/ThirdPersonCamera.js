@@ -1,14 +1,15 @@
 import * as THREE from 'three';
 
 const ThirdPersonCamera = (camera, currentControlObject, cameraDebug) => {
+  // console.log(currentControlObject);
   const calculateIdealOffset = () => {
     const idealOffset = new THREE.Vector3(
       cameraDebug.offsetX,
       cameraDebug.offsetY,
       cameraDebug.offsetZ,
     );
-    idealOffset.applyQuaternion(currentControlObject.parent.quaternion);
-    idealOffset.add(currentControlObject.parent.position);
+    idealOffset.applyQuaternion(currentControlObject.quaternion);
+    idealOffset.add(currentControlObject.position);
 
     return idealOffset;
   };
@@ -18,8 +19,8 @@ const ThirdPersonCamera = (camera, currentControlObject, cameraDebug) => {
       cameraDebug.lookY,
       cameraDebug.lookZ,
     );
-    idealLookAt.applyQuaternion(currentControlObject.parent.quaternion);
-    idealLookAt.add(currentControlObject.parent.position);
+    idealLookAt.applyQuaternion(currentControlObject.quaternion);
+    idealLookAt.add(currentControlObject.position);
 
     return idealLookAt;
   };

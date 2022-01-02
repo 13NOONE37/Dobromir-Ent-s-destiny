@@ -1,6 +1,7 @@
 const initInputControler = () => {
   const keys = {
     mouse: { x: 0, y: 0 },
+    mousePrevious: { x: 0, y: 0 },
     forward: false,
     backward: false,
     left: false,
@@ -93,6 +94,9 @@ const initInputControler = () => {
     // console.log("contextmenu", e);
   });
   window.addEventListener('mousemove', (e) => {
+    keys.mousePrevious.x = keys.mouse.x;
+    keys.mousePrevious.y = keys.mouse.y;
+
     keys.mouse.x = e.clientX;
     keys.mouse.y = e.clientY;
   });

@@ -76,34 +76,36 @@ const MainScene = () => {
       }
 
       const speed = xspeed.value;
-      const rotation = czesio.getWorldDirection(czesio.rotation.toVector3());
+      const rotation = controlObject.getWorldDirection(
+        controlObject.rotation.toVector3(),
+      );
 
       const theta = Math.atan2(rotation.x, rotation.z);
 
       if (keys.forward) {
         console.log(controlObject);
         const x = Math.sin(theta) * speed,
-          y = czesio.body.velocity.y,
+          y = controlObject.body.velocity.y,
           z = Math.cos(theta) * speed;
 
-        czesio.body.setVelocity(x, y, z);
+        controlObject.body.setVelocity(x, y, z);
         czesioWalkAction.play();
         czesioIdleAction.stop();
       }
       if (keys.backward) {
         const x = -Math.sin(theta) * speed,
-          y = czesio.body.velocity.y,
+          y = controlObject.body.velocity.y,
           z = -Math.cos(theta) * speed;
-        czesio.body.setVelocity(x, y, z);
+        controlObject.body.setVelocity(x, y, z);
         czesioWalkAction.play();
         czesioIdleAction.stop();
       }
       if (keys.left) {
-        czesio.body.setAngularVelocityY(1.5);
+        controlObject.body.setAngularVelocityY(1.5);
       } else if (keys.right) {
-        czesio.body.setAngularVelocityY(-1.5);
+        controlObject.body.setAngularVelocityY(-1.5);
       } else {
-        czesio.body.setAngularVelocityY(0);
+        controlObject.body.setAngularVelocityY(0);
       }
       if (keys.space && keys.canJump) {
         keys.canJump = false;
@@ -111,7 +113,7 @@ const MainScene = () => {
         czesioJumpAction.stop();
         czesioJumpAction.play();
         setTimeout(() => {
-          czesio.body.setVelocityY(10);
+          controlObject.body.setVelocityY(10);
           keys.canJump = true;
         }, 200);
         setTimeout(() => (keys.isJumping = false), 200);
@@ -127,6 +129,37 @@ const MainScene = () => {
     }
     if (typeOfObject == 'Ship') {
       //Ship
+      const speed = xspeed.value;
+      const rotation = controlObject.getWorldDirection(
+        controlObject.rotation.toVector3(),
+      );
+      const theta = Math.atan2(rotation.x, rotation.z);
+
+      if (keys.forward) {
+        // console.log(keys.mouse.x);
+        // setTimeout(() => {
+        //   controlObject.body.setVelocityY(10);
+        // }, 200);
+        const x = Math.sin(theta) * speed,
+          y = controlObject.body.velocity.y,
+          z = Math.cos(theta) * speed;
+
+        controlObject.body.setVelocity(x, y, z);
+      }
+      if (
+        keys.mouse.x > keys.mousePrevious.x &&
+        keys.mouse.x - keys.mousePrevious.x
+      ) {
+        controlObject.body.setAngularVelocityY(-0.5);
+        //right
+      }
+      if (keys.mouse.x < keys.mousePrevious.x) {
+        controlObject.body.setAngularVelocityY(0.5);
+        //left
+      }
+      // controlObject.rotation.set(0, Math.sin(keys.mouse.x) * Math.PI, 0);
+      if (keys.right) {
+      }
     }
     if (typeOfObject == 'Car') {
       //Ship
@@ -160,11 +193,6 @@ const MainScene = () => {
     //Physics
     physics.update(60);
     physics.updateDebugger();
-
-    // const x = (keys.mouse.x / window.innerWidth) * 4 - 1;
-    // const y = -(keys.mouse.y / window.innerHeight) * 4 + 1;
-
-    // czesio.rotation.y = -x;
 
     objectControler(
       elapsedTime,
@@ -305,30 +333,30 @@ const MainScene = () => {
   });
 
   let mixer = null;
-  let czesio, czesioWalkAction, czesioIdleAction, czesioJumpAction;
+  let czesioWalkAction, czesioIdleAction, czesioJumpAction;
 
   modelLoader.load('/Assets/Characters/Czesio2.glb', (model) => {
     const children = model.scene.children[0];
-    currentControlObject = children;
+    currentControlObject = new ExtendedObject3D();
+    currentControlObject.add(children);
     currentControlObjectType = 'Character';
 
     //lookX:-1,y:-6,z:48,x:0,y:1.9:z:-3.7
-    czesio = new ExtendedObject3D();
-    czesio.add(children);
+
     // czesio.scale.set(0.4, 0.4, 0.4);
     // czesio.position.y = 2;
-    scene.add(czesio);
-    physics.add.existing(czesio, {
+    scene.add(currentControlObject);
+    physics.add.existing(currentControlObject, {
       mass: 20,
       shape: 'capsule',
       radius: 1.55,
-      height: czesio.scale.y,
+      height: currentControlObject.scale.y,
       offset: { y: -2.3 }, //-0.75
     });
-    czesio.body.setFriction(0.8);
-    czesio.body.setAngularFactor(0, 0, 0);
+    currentControlObject.body.setFriction(0.8);
+    currentControlObject.body.setAngularFactor(0, 0, 0);
 
-    mixer = new THREE.AnimationMixer(czesio);
+    mixer = new THREE.AnimationMixer(currentControlObject);
 
     czesioWalkAction = mixer.clipAction(model.animations[4]);
     czesioJumpAction = mixer.clipAction(model.animations[3]);
@@ -503,100 +531,112 @@ const MainScene = () => {
     const ship = model.scene.getObjectByName('Ship', true);
     ship.position.set(4, 5, 0);
     ship.scale.set(2, 2, 2);
-    ship.rotation.y = Math.PI * 0.5;
-    // scene.add(ship);
-    // physics.add.existing(ship, {
-    //   shape: 'hull',
 
-    //   mass: 1000,
-    // });
+    scene.add(ship);
+    physics.add.existing(ship, {
+      shape: 'hull',
+      offset: { z: -2, y: 0.5 },
+      mass: 1000,
+    });
+    currentControlObject = ship;
+    currentControlObjectType = 'Ship';
 
-    const createCompoundFromData = (group, data) => {
-      const universalMaterial = new THREE.MeshBasicMaterial({
-        wireframe: true,
-      });
-      data.forEach((item) => {
-        switch (item.type) {
-          case 'box': {
-            const box = new THREE.Mesh(
-              new BoxBufferGeometry(...item.geometry),
-              universalMaterial,
-            );
-            box.position.set(item.position.x, item.position.y, item.position.z);
-            group.add(box);
-            break;
-          }
-          case 'cylinder': {
-            const cylinder = new THREE.Mesh(
-              new THREE.CylinderBufferGeometry(...item.geometry),
-              universalMaterial,
-            );
-            cylinder.position.set(
-              item.position.x,
-              item.position.y,
-              item.position.z,
-            );
-            group.add(cylinder);
-            break;
-          }
-        }
-      });
-    };
+    cameraDebug.lookX = -110;
+    cameraDebug.lookY = 4;
+    cameraDebug.lookZ = 15;
+    cameraDebug.offsetX = 28;
+    cameraDebug.offsetY = 8.5;
+    cameraDebug.offsetZ = -0.3;
 
-    const data = [
-      {
-        type: 'cylinder',
-        geometry: [
-          4, //radiusTop
-          4, //radiusBottom
-          2, //height
-          24, //radiusSegments
-        ],
-        position: {
-          x: 0,
-          z: 0,
-          y: 10,
-        },
-      },
-      {
-        type: 'cylinder',
-        geometry: [
-          4, //radiusTop
-          4, //radiusBottom
-          2, //height
-          24, //radiusSegments
-        ],
-        position: {
-          x: 0,
-          z: 0,
-          y: -10,
-        },
-      },
-      {
-        type: 'cylinder',
-        geometry: [
-          1, //radiusTop
-          1, //radiusBottom
-          20, //height
-          4, //radiusSegments
-        ],
-        position: {
-          x: 0,
-          z: 0,
-          y: 0,
-        },
-      },
-    ];
-    const wheel = new THREE.Group();
-    createCompoundFromData(wheel, data);
+    // const createCompoundFromData = (group, data) => {
+    //   const universalMaterial = new THREE.MeshBasicMaterial({
+    //     wireframe: true,
+    //   });
+    //   data.forEach((item) => {
+    //     switch (item.type) {
+    //       case 'box': {
+    //         const box = new THREE.Mesh(
+    //           new BoxBufferGeometry(...item.geometry),
+    //           universalMaterial,
+    //         );
+    //         box.position.set(item.position.x, item.position.y, item.position.z);
+    //         group.add(box);
+    //         break;
+    //       }
+    //       case 'cylinder': {
+    //         const cylinder = new THREE.Mesh(
+    //           new THREE.CylinderBufferGeometry(...item.geometry),
+    //           universalMaterial,
+    //         );
+    //         cylinder.position.set(
+    //           item.position.x,
+    //           item.position.y,
+    //           item.position.z,
+    //         );
+    //         group.add(cylinder);
+    //         break;
+    //       }
+    //     }
+    //   });
+    // };
 
-    wheel.rotateZ(Math.PI / 2);
-    wheel.position.z += 20;
-    wheel.position.y += 6;
+    // const data = [
+    //   {
+    //     type: 'cylinder',
+    //     geometry: [
+    //       4, //radiusTop
+    //       4, //radiusBottom
+    //       2, //height
+    //       24, //radiusSegments
+    //     ],
+    //     position: {
+    //       x: 0,
+    //       z: 0,
+    //       y: 10,
+    //     },
+    //   },
+    //   {
+    //     type: 'cylinder',
+    //     geometry: [
+    //       4, //radiusTop
+    //       4, //radiusBottom
+    //       2, //height
+    //       24, //radiusSegments
+    //     ],
+    //     position: {
+    //       x: 0,
+    //       z: 0,
+    //       y: -10,
+    //     },
+    //   },
+    //   {
+    //     type: 'cylinder',
+    //     geometry: [
+    //       1, //radiusTop
+    //       1, //radiusBottom
+    //       20, //height
+    //       4, //radiusSegments
+    //     ],
+    //     position: {
+    //       x: 0,
+    //       z: 0,
+    //       y: 0,
+    //     },
+    //   },
+    // ];
+    // const wheel = new THREE.Group();
+    // createCompoundFromData(wheel, data);
+
+    // wheel.rotateZ(Math.PI / 2);
+    // wheel.position.z += 20;
+    // wheel.position.y += 6;
 
     // scene.add(wheel);
     // physics.add.existing(wheel, { mass: 1000 });
-    physics.add.existing(ship, { compound: wheel });
+    // physics.add.existing(ship, {
+    //   shape: 'hull',
+    // });
+
     // currentControlObject = ship;
 
     // InitStaticModel(
