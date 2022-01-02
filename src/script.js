@@ -129,36 +129,30 @@ const MainScene = () => {
     }
     if (typeOfObject == 'Ship') {
       //Ship
-      const speed = xspeed.value;
-      const rotation = controlObject.getWorldDirection(
-        controlObject.rotation.toVector3(),
-      );
-      const theta = Math.atan2(rotation.x, rotation.z);
 
-      if (keys.forward) {
-        // console.log(keys.mouse.x);
-        // setTimeout(() => {
-        //   controlObject.body.setVelocityY(10);
-        // }, 200);
-        const x = Math.sin(theta) * speed,
-          y = controlObject.body.velocity.y,
-          z = Math.cos(theta) * speed;
-
-        controlObject.body.setVelocity(x, y, z);
-      }
       if (
         keys.mouse.x > keys.mousePrevious.x &&
         keys.mouse.x - keys.mousePrevious.x
       ) {
-        controlObject.body.setAngularVelocityY(-0.5);
+        // controlObject.body.setAngularVelocityY(-0.5);
         //right
       }
       if (keys.mouse.x < keys.mousePrevious.x) {
-        controlObject.body.setAngularVelocityY(0.5);
+        // controlObject.body.setAngularVelocityY(0.5);
         //left
       }
-      // controlObject.rotation.set(0, Math.sin(keys.mouse.x) * Math.PI, 0);
+
+      if (keys.forward) {
+        xspeed.value = 4;
+      }
+      if (keys.backward) {
+        xspeed.value = 1;
+      }
+      if (keys.left) {
+        controlObject.body.setAngularVelocityX(0.4);
+      }
       if (keys.right) {
+        controlObject.body.setAngularVelocityX(-0.4);
       }
     }
     if (typeOfObject == 'Car') {
@@ -534,8 +528,12 @@ const MainScene = () => {
 
     scene.add(ship);
     physics.add.existing(ship, {
-      shape: 'hull',
-      offset: { z: -2, y: 0.5 },
+      shape: 'box',
+      width: 7,
+      depth: 5,
+      height: 3,
+      // offset: { z: -2, y: 0.5 },
+      offset: { z: 0, x: 2, y: 0.5 },
       mass: 1000,
     });
     currentControlObject = ship;
