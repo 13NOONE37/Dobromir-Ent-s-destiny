@@ -19,10 +19,9 @@ import {
 
 import InitStaticModel from './Assets/Utils/InitStaticModel';
 import ThirdPersonCamera from './Assets/Config/ThirdPersonCamera';
-import { BoxBufferGeometry } from 'three';
 
 const MainScene = () => {
-  const [renderer, camera, controls, scene, gui] = initBasics();
+  const [renderer, camera, controls, scene, composer, gui] = initBasics();
 
   let currentControlObject = null,
     currentControlObjectType = 'Character';
@@ -54,7 +53,8 @@ const MainScene = () => {
   cameraFolder.add(cameraDebug, 'offsetZ').min(-100).max(100).name('offsetZ');
 
   const renderBasic = () => {
-    renderer.render(scene, camera);
+    // renderer.render(scene, camera);
+    composer.render();
     // sunLight.target = currentControlObject; // camera look at controlObject
   };
 
@@ -126,20 +126,35 @@ const MainScene = () => {
       if (!keys.shift) {
         xspeed.value = 1.7;
       }
+
+      //action
+      if (keys.action) {
+      }
     }
     if (typeOfObject == 'Ship') {
       //Ship
-
       if (
-        keys.mouse.x > keys.mousePrevious.x &&
-        keys.mouse.x - keys.mousePrevious.x
+        keys.mouse.x < window.innerWidth / 2 - window.innerWidth / 4 ||
+        keys.mouse.x > window.innerWidth / 2 + window.innerWidth / 4
       ) {
-        // controlObject.body.setAngularVelocityY(-0.5);
-        //right
+        //horizontaly
+        if (keys.mouse.x > window.innerWidth / 2) {
+          controlObject.body.setAngularVelocityY(-0.5);
+          //right
+        }
+        if (keys.mouse.x < window.innerWidth / 2) {
+          controlObject.body.setAngularVelocityY(0.5);
+          // left;
+        }
       }
-      if (keys.mouse.x < keys.mousePrevious.x) {
-        // controlObject.body.setAngularVelocityY(0.5);
-        //left
+      if (
+        keys.mouse.y < window.innerHeight / 2 - window.innerHeight / 4 ||
+        keys.mouse.y > window.innerHeight / 2 + window.innerHeight / 4
+      ) {
+        //verticaly
+      }
+      if (keys.space) {
+        controlObject.body.setVelocityY(10);
       }
 
       if (keys.forward) {
@@ -160,6 +175,35 @@ const MainScene = () => {
     }
     //Może Lepiej zrealizować te funkcje poprzez wysyłanie postaci aktualnie grywalnej do kontrolera i poruszania przez gsap
   };
+  /*#TODO:jump
+  public wantsToJump: boolean = false;
+	public initJumpSpeed: number = -1;
+  
+  if (character.wantsToJump)
+		{
+			// If initJumpSpeed is set
+			if (character.initJumpSpeed > -1)
+			{
+				// Flatten velocity
+				body.velocity.y = 0;
+				let speed = Math.max(character.velocitySimulator.position.length() * 4, character.initJumpSpeed);
+				body.velocity = Utils.cannonVector(character.orientation.clone().multiplyScalar(speed));
+			}
+			else {
+				// Moving objects compensation
+				let add = new CANNON.Vec3();
+				character.rayResult.body.getVelocityAtWorldPoint(character.rayResult.hitPointWorld, add);
+				body.velocity.vsub(add, body.velocity);
+			}
+
+			// Add positive vertical velocity 
+			body.velocity.y += 4;
+			// Move above ground by 2x safe offset value
+			body.position.y += character.raySafeOffset * 2;
+			// Reset flag
+			character.wantsToJump = false;
+		}
+    */
   const updateEnviorment = (currentTime, deltaTime) => {
     //Update
     controls.update();
@@ -193,6 +237,7 @@ const MainScene = () => {
       currentControlObject,
       currentControlObjectType,
     );
+
     updateEnviorment(currentTime, deltaTime);
     renderBasic(deltaTime);
 
@@ -329,8 +374,19 @@ const MainScene = () => {
   let mixer = null;
   let czesioWalkAction, czesioIdleAction, czesioJumpAction;
 
-  modelLoader.load('/Assets/Characters/Czesio2.glb', (model) => {
+  const box = new THREE.Mesh(
+    new THREE.BoxBufferGeometry(5, 5, 5),
+    new THREE.MeshStandardMaterial({
+      color: 0xecff4a,
+      emissive: 0xecff4a,
+      emissiveIntensity: 10,
+    }),
+  );
+  box.position.y = 1;
+  scene.add(box);
+  modelLoader.load('/Assets/Characters/DobromirModel.glb', (model) => {
     const children = model.scene.children[0];
+
     currentControlObject = new ExtendedObject3D();
     currentControlObject.add(children);
     currentControlObjectType = 'Character';
@@ -358,6 +414,7 @@ const MainScene = () => {
 
     czesioIdleAction = mixer.clipAction(model.animations[2]);
     czesioIdleAction.setDuration(8);
+    console.log(currentControlObject);
   });
 
   //Rat's John
@@ -536,15 +593,15 @@ const MainScene = () => {
       offset: { z: 0, x: 2, y: 0.5 },
       mass: 1000,
     });
-    currentControlObject = ship;
-    currentControlObjectType = 'Ship';
+    // currentControlObject = ship;
+    // currentControlObjectType = 'Ship';
 
-    cameraDebug.lookX = -110;
-    cameraDebug.lookY = 4;
-    cameraDebug.lookZ = 15;
-    cameraDebug.offsetX = 28;
-    cameraDebug.offsetY = 8.5;
-    cameraDebug.offsetZ = -0.3;
+    // cameraDebug.lookX = -110;
+    // cameraDebug.lookY = 4;
+    // cameraDebug.lookZ = 15;
+    // cameraDebug.offsetX = 28;
+    // cameraDebug.offsetY = 8.5;
+    // cameraDebug.offsetZ = -0.3;
 
     // const createCompoundFromData = (group, data) => {
     //   const universalMaterial = new THREE.MeshBasicMaterial({
