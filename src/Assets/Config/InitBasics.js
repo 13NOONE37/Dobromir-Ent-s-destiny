@@ -8,6 +8,11 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js';
 
 const initBasics = () => {
+  const ENTIRE_SCENE = 0,
+    BLOOM_SCENE = 1;
+  const bloomLayer = new THREE.Layers();
+  bloomLayer.set(BLOOM_SCENE);
+
   //Basic
   const sizes = {
     width: window.innerWidth,
@@ -35,7 +40,6 @@ const initBasics = () => {
     0.1,
     10000,
   );
-  camera.layers.enable(1);
 
   camera.position.set(0, 15, 15);
   scene.add(camera);
@@ -54,7 +58,6 @@ const initBasics = () => {
     //Update camera
     camera.aspect = sizes.width / sizes.height;
     camera.updateProjectionMatrix();
-    // camera.layers.enable(1);
 
     // Update renderer
     renderer.setSize(sizes.width, sizes.height);
@@ -63,6 +66,27 @@ const initBasics = () => {
     //Update postprocesing
     composer.setSize(sizes.width, sizes.height);
   });
+
+  var obj = new THREE.Mesh(
+    new THREE.BoxGeometry(5, 5, 4),
+    new THREE.MeshLambertMaterial({
+      color: 0x150505,
+      wireframe: false,
+    }),
+  );
+  obj.position.z = 0.25;
+  scene.add(obj);
+
+  var objBack = new THREE.Mesh(
+    new THREE.BoxGeometry(5, 5, 1),
+    new THREE.MeshBasicMaterial({
+      color: 'red',
+      wireframe: false,
+    }),
+  );
+  objBack.position.z = -2.25;
+  objBack.layers.enable(BLOOM_SCENE);
+  scene.add(objBack);
 
   //Postprocesing
   const renderScene = new RenderPass(scene, camera);
@@ -88,9 +112,9 @@ const initBasics = () => {
 
   composer.addPass(renderScene);
   composer.addPass(bloomPass);
-
-  // renderer.gammaInput = true;
-  // renderer.gammaOutput = true;
+  // renderer.gammaInput = true
+  // renderer.gammaOutput = true
+  // renderer.toneMappingExposure = Math.pow(0.9, 4.0)
 
   gui.add(params, 'exposure', 0.1, 2).onChange(function (value) {
     renderer.toneMappingExposure = Math.pow(value, 4.0);
@@ -125,6 +149,16 @@ const initBasics = () => {
   //   encoding: THREE.sRGBEncoding,
   // });
 
-  return [renderer, camera, controls, scene, composer, gui];
+  return [
+    renderer,
+    camera,
+    controls,
+    scene,
+    composer,
+    ENTIRE_SCENE,
+    BLOOM_SCENE,
+
+    gui,
+  ];
 };
 export default initBasics;

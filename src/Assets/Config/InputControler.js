@@ -1,37 +1,36 @@
-import _ from 'lodash';
-
-const currentObject = { object: undefined, type: undefined };
-const keys = {
-  mouse: { x: 0, y: 0 },
-  mousePrevious: { x: 0, y: 0 },
-  forward: false,
-  backward: false,
-  left: false,
-  right: false,
-  space: false,
-  canJump: true,
-  isJumping: false,
-  shift: false,
-  action: false,
-  speed: 1.7,
-};
-
 const handleControler = () => {
-  console.log(currentObject);
   if (currentObject.type == 'Character') {
+    //animation
+    switch (keys.motion) {
+      case 'FinchFist': {
+        break;
+      }
+      case 'Idle': {
+        currentObject.object.animations[2].stop();
+        currentObject.object.animations[3].stop();
+        currentObject.object.animations[4].stop();
+        currentObject.object.animations[1].play();
+        break;
+      }
+      case 'Jump': {
+        currentObject.object.animations[2].play();
+        break;
+      }
+      case 'Run': {
+        currentObject.object.animations[4].stop();
+        currentObject.object.animations[3].play();
+        break;
+      }
+      case 'Walk': {
+        currentObject.object.animations[4].play();
+        break;
+      }
+    }
     //Dobromir
-    if (
-      czesioWalkAction &&
-      !keys.forward &&
-      !keys.backward &&
-      !keys.left &&
-      !keys.right
-    ) {
-      czesioWalkAction.stop();
-      czesioIdleAction.play();
+    if (!keys.forward && !keys.backward && !keys.left && !keys.right) {
+      keys.motion = 'Idle';
     }
 
-    const speed = keys.speed;
     const rotation = currentObject.object.getWorldDirection(
       currentObject.object.rotation.toVector3(),
     );
@@ -39,22 +38,24 @@ const handleControler = () => {
     const theta = Math.atan2(rotation.x, rotation.z);
 
     if (keys.forward) {
-      console.log(currentObject.object);
-      const x = Math.sin(theta) * speed,
+      const x = Math.sin(theta) * keys.speed,
         y = currentObject.object.body.velocity.y,
-        z = Math.cos(theta) * speed;
+        z = Math.cos(theta) * keys.speed;
 
       currentObject.object.body.setVelocity(x, y, z);
-      czesioWalkAction.play();
-      czesioIdleAction.stop();
+      keys.motion = 'Walk';
+      // currentObject.object.animations[4].play();
+      // currentObject.object.animations[1].stop();
     }
     if (keys.backward) {
-      const x = -Math.sin(theta) * speed,
+      const x = -Math.sin(theta) * keys.speed,
         y = currentObject.object.body.velocity.y,
-        z = -Math.cos(theta) * speed;
+        z = -Math.cos(theta) * keys.speed;
       currentObject.object.body.setVelocity(x, y, z);
-      czesioWalkAction.play();
-      czesioIdleAction.stop();
+      keys.motion = 'Walk';
+
+      // currentObject.object.animations[4].play();
+      // currentObject.object.animations[1].stop();
     }
     if (keys.left) {
       currentObject.object.body.setAngularVelocityY(1.5);
@@ -66,21 +67,27 @@ const handleControler = () => {
     if (keys.space && keys.canJump) {
       keys.canJump = false;
       keys.isJumping = true;
-      czesioJumpAction.stop();
-      czesioJumpAction.play();
+      keys.motion = 'Jump';
+
+      // currentObject.object.animations[1].stop();
+      // currentObject.object.animations[2].play();
+      // console.log(currentObject.object.animations);
+      // czesioJumpAction.stop();
+      // czesioJumpAction.play();
       setTimeout(() => {
         currentObject.object.body.setVelocityY(10);
         keys.canJump = true;
+        currentObject.object.animations[2].stop();
       }, 200);
-      setTimeout(() => (keys.isJumping = false), 200);
     }
 
     //Sprint
-    if (keys.shift) {
-      keys.speed = 3.7;
+    if (keys.forward && keys.shift) {
+      // keys.speed = 3.7;
+      keys.motion = 'Run';
     }
     if (!keys.shift) {
-      keys.speed = 1.7;
+      if (keys.speed != 1.7) keys.speed = 1.7;
     }
 
     //action
@@ -114,10 +121,10 @@ const handleControler = () => {
     }
 
     if (keys.forward) {
-      xspeed.value = 4;
+      keys.speed.value = 4;
     }
     if (keys.backward) {
-      xspeed.value = 1;
+      keys.speed.value = 1;
     }
     if (keys.left) {
       currentObject.object.body.setAngularVelocityX(0.4);
@@ -129,6 +136,23 @@ const handleControler = () => {
   if (currentObject.type == 'Car') {
     //Ship
   }
+};
+
+const currentObject = { object: undefined, type: undefined };
+const keys = {
+  motion: 'Idle',
+  mouse: { x: 0, y: 0 },
+  mousePrevious: { x: 0, y: 0 },
+  forward: false,
+  backward: false,
+  left: false,
+  right: false,
+  space: false,
+  canJump: true,
+  isJumping: false,
+  shift: false,
+  action: false,
+  speed: 1.7,
 };
 const initInputControler = () => {
   const handleKeyDown = (e) => {
@@ -161,7 +185,6 @@ const initInputControler = () => {
         keys.action = true;
         break;
     }
-    handleControler();
   };
   const handleKeyUp = (e) => {
     switch (e.keyCode) {
@@ -193,7 +216,6 @@ const initInputControler = () => {
         keys.action = false;
         break;
     }
-    handleControler();
   };
 
   //!--Keyboard
@@ -213,21 +235,17 @@ const initInputControler = () => {
     e.preventDefault();
     // console.log("contextmenu", e);
   });
-  window.addEventListener(
-    'mousemove',
-    _.debounce((e) => {
-      keys.mousePrevious.x = keys.mouse.x;
-      keys.mousePrevious.y = keys.mouse.y;
-      keys.mouse.x = e.clientX;
-      keys.mouse.y = e.clientY;
-      // handleControler()
-    }, 5),
-  );
+  window.addEventListener('mousemove', (e) => {
+    keys.mousePrevious.x = keys.mouse.x;
+    keys.mousePrevious.y = keys.mouse.y;
+    keys.mouse.x = e.clientX;
+    keys.mouse.y = e.clientY;
+    //
+  });
 };
-
 const initControler = () => {
   initInputControler();
-  return currentObject;
+  return [currentObject, handleControler];
 };
 
 export default initControler;

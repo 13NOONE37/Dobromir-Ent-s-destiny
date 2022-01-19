@@ -21,9 +21,18 @@ import InitStaticModel from './Assets/Utils/InitStaticModel';
 import ThirdPersonCamera from './Assets/Config/ThirdPersonCamera';
 
 const MainScene = () => {
-  const [renderer, camera, controls, scene, composer, gui] = initBasics();
+  const [
+    renderer,
+    camera,
+    controls,
+    scene,
+    composer,
+    ENTIRE_SCENE,
+    BLOOM_SCENE,
+    gui,
+  ] = initBasics();
 
-  const currentObject = initControler();
+  const [currentObject, handleControler] = initControler();
 
   //Animate
   let stats = new Stats();
@@ -52,24 +61,34 @@ const MainScene = () => {
   cameraFolder.add(cameraDebug, 'offsetZ').min(-100).max(100).name('offsetZ');
 
   const renderBasic = () => {
-    renderer.render(scene, camera);
     renderer.autoClear = false;
     renderer.clear();
-    camera.layers.set(1);
+
+    camera.layers.set(BLOOM_SCENE);
     composer.render();
+
     renderer.clearDepth();
-    camera.layers.set(0);
+    camera.layers.set(ENTIRE_SCENE);
     renderer.render(scene, camera);
+
+    // camera.layers.set(BLOOM_SCENE);
+    // composer.render();
+    // camera.layers.set(ENTIRE_SCENE);
+    // renderer.render(scene, camera);
     // sunLight.target = currentControlObject; // camera look at controlObject
   };
-
   const updateEnviorment = (currentTime, deltaTime) => {
-    //Update
-    controls.update();
-    mixer && mixer.update(deltaTime);
+    //Other
+    // controls.update();
+    mixer.update(deltaTime);
+    ThirdPersonCamera(camera, currentObject.object, cameraDebug);
+    handleControler();
+    currentObject.object.body.needUpdate = true;
 
-    currentObject.object &&
-      ThirdPersonCamera(camera, currentObject.object, cameraDebug);
+    //Physics
+    physics.update(60);
+    physics.updateDebugger();
+
     //Sun update
     skyEffectControler.elevation = ((currentTime / 50) % 180) + 1;
     skyGuiChanged();
@@ -78,33 +97,26 @@ const MainScene = () => {
     sunLight.position.z = sunObject.z * 100;
 
     //water
-    water.material.uniforms['time'].value += 1.0 / 60.0;
-    water.material.uniforms['sunDirection'].value.copy(sunLight).normalize();
+    // water.material.uniforms['time'].value += 1.0 / 60.0;
+    // water.material.uniforms['sunDirection'].value.copy(sunLight).normalize();
   };
-
   const tick = () => {
     stats.begin();
     const elapsedTime = clock.getElapsedTime();
     const deltaTime = elapsedTime - currentTime;
     currentTime = elapsedTime;
 
-    //Physics
-    physics.update(60);
-    physics.updateDebugger();
-
-    currentObject.object && updateEnviorment(currentTime, deltaTime);
+    currentObject.object && mixer && updateEnviorment(currentTime, deltaTime);
     renderBasic(deltaTime);
-
     stats.end();
     window.requestAnimationFrame(tick);
   };
-
   const init = async () => {
     tick();
   };
+
   const physics = new AmmoPhysics(scene);
   physics.debug.enable(true);
-
   const { factory } = physics; // the factory will make/add object without physics
 
   /*!--Base--!*/
@@ -114,28 +126,28 @@ const MainScene = () => {
     initWeatherControler(renderer, scene, gui, modelLoader);
 
   /*!---Content--! */
-  const waterGeometry = new THREE.CircleBufferGeometry(10, 10);
+  // const waterGeometry = new THREE.CircleBufferGeometry(10, 10);
 
-  const water = new Water(waterGeometry, {
-    textureWidth: 512,
-    textureHeight: 512,
-    waterNormals: new THREE.TextureLoader().load(
-      '/waternormals.jpg',
-      function (texture) {
-        texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-      },
-    ),
-    sunDirection: new THREE.Vector3(),
-    sunColor: 0xffffff,
-    waterColor: 0x001e0f,
-    distortionScale: 3.7,
-    fog: scene.fog !== undefined,
-  });
+  // const water = new Water(waterGeometry, {
+  //   textureWidth: 512,
+  //   textureHeight: 512,
+  //   waterNormals: new THREE.TextureLoader().load(
+  //     '/waternormals.jpg',
+  //     function (texture) {
+  //       texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+  //     },
+  //   ),
+  //   sunDirection: new THREE.Vector3(),
+  //   sunColor: 0xffffff,
+  //   waterColor: 0x001e0f,
+  //   distortionScale: 3.7,
+  //   fog: scene.fog !== undefined,
+  // });
 
-  water.rotation.x = -Math.PI / 2;
-  water.position.y = 0.1;
+  // water.rotation.x = -Math.PI / 2;
+  // water.position.y = 0.1;
 
-  scene.add(water);
+  // scene.add(water);
 
   // const torch = new THREE.Group();
   // const point = new THREE.PointLight(0xff7700, 150, 1000);
@@ -183,46 +195,6 @@ const MainScene = () => {
     { custom: groundMaterial },
   );
 
-  //forest
-  const initForest = (treeBase) => {
-    const forest = new THREE.Group();
-    const forestDebug = {
-      count: 15,
-      length: 450,
-      scaleCoefficient: 90,
-    };
-
-    const renderForest = () => {
-      for (let i = 0; i < forestDebug.count; i++) {
-        for (let j = 0; j < forestDebug.count; j++) {
-          const tree = treeBase.clone();
-
-          const randomScale = 3 - Math.random();
-          tree.rotation.y = Math.PI * Math.random();
-          tree.scale.set(randomScale, randomScale, randomScale);
-
-          tree.position.x = i * 12 + (0.5 - Math.random()) * 2;
-          tree.position.z = j * 12 + (0.5 - Math.random()) * 2;
-          forest.add(tree);
-          // physics.add.existing(tree);
-          // gsap.to(tree.rotation, { duration: 6, y: 2 });
-        }
-      }
-    };
-    renderForest();
-
-    forest.position.set(40, 5, -20);
-    scene.add(forest);
-    // physics.add.existing(forest);
-    factory.add.existing(forest);
-    // physics.physicsWorld.add.existing(forest);
-    updateAllMaterials(scene, enviormentMapTexture);
-  };
-
-  modelLoader.load('/Assets/Enviorment/Tree11.glb', (tree) => {
-    // initForest(tree.scene.children[0]);
-  });
-
   let mixer;
   let czesioWalkAction, czesioIdleAction, czesioJumpAction;
 
@@ -235,51 +207,39 @@ const MainScene = () => {
     }),
   );
   box.position.y = 1;
-  box.layers.enable(1);
+  box.layers.enable(BLOOM_SCENE);
   scene.add(box);
 
+  //Dobromir
   modelLoader.load('/Assets/Characters/DobromirModel.glb', (model) => {
     const children = model.scene.children[0];
 
     currentObject.object = new ExtendedObject3D();
     currentObject.object.add(children);
-    currentObject.object.layers.enable(0);
+    currentObject.object.layers.enable(BLOOM_SCENE);
     currentObject.type = 'Character';
-    console.log(currentObject.object);
-    // currentControlObject.children[0].children[5].children[1].material.emissiveIntensity = 3;
+    currentObject.object.scale.set(2, 2, 2);
 
-    // cameraDebug.lookX = 6;
-    // cameraDebug.lookY = -14;
-    // cameraDebug.lookZ = -100;
-    // cameraDebug.offsetX = 0;
-    // cameraDebug.offsetY = 1.9;
-    // cameraDebug.offsetZ = 4.1;
+    mixer = new THREE.AnimationMixer(currentObject.object);
+    for (const clip of model.animations) {
+      const action = mixer.clipAction(clip);
+      // action.clampWhenFinished = true;
+      if (clip.name == 'Jump') {
+        // action.setLoop(THREE.LoopOnce)
+        // action.clampWhenFinished = true;
+      }
+      currentObject.object.animations.push(action);
+    }
 
-    //lookX:-1,y:-6,z:48,x:0,y:1.9:z:-3.7
-
-    // czesio.scale.set(0.4, 0.4, 0.4);
-    // czesio.position.y = 2;
     scene.add(currentObject.object);
     physics.add.existing(currentObject.object, {
-      mass: 20,
-      shape: 'capsule',
-      radius: 1.55,
+      mass: 100,
+      shape: 'convex',
       height: currentObject.object.scale.y,
-      offset: { y: -2.3 }, //-0.75
     });
     currentObject.object.body.setFriction(0.8);
     currentObject.object.body.setAngularFactor(0, 0, 0);
-
-    mixer = new THREE.AnimationMixer(currentObject.object);
-
-    czesioWalkAction = mixer.clipAction(model.animations[4]);
-    czesioJumpAction = mixer.clipAction(model.animations[3]);
-    czesioJumpAction.setLoop(THREE.LoopOnce);
-
-    czesioIdleAction = mixer.clipAction(model.animations[2]);
-    czesioIdleAction.setDuration(8);
   });
-
   //Rat's John
   modelLoader.load('/Assets/Farm.glb', (model) => {
     const moveAllTo = { x: 0, y: 0, z: 0 };
@@ -456,6 +416,45 @@ const MainScene = () => {
       offset: { z: 0, x: 2, y: 0.5 },
       mass: 1000,
     });
+
+    //forest
+    // modelLoader.load('/Assets/Enviorment/Tree11.glb', (tree) => {
+    //   // initForest(tree.scene.children[0]);
+    // });
+    // const initForest = (treeBase) => {
+    //   const forest = new THREE.Group();
+    //   const forestDebug = {
+    //     count: 15,
+    //     length: 450,
+    //     scaleCoefficient: 90,
+    //   };
+
+    //   const renderForest = () => {
+    //     for (let i = 0; i < forestDebug.count; i++) {
+    //       for (let j = 0; j < forestDebug.count; j++) {
+    //         const tree = treeBase.clone();
+
+    //         const randomScale = 3 - Math.random();
+    //         tree.rotation.y = Math.PI * Math.random();
+    //         tree.scale.set(randomScale, randomScale, randomScale);
+
+    //         tree.position.x = i * 12 + (0.5 - Math.random()) * 2;
+    //         tree.position.z = j * 12 + (0.5 - Math.random()) * 2;
+    //         forest.add(tree);
+    //         // physics.add.existing(tree);
+    //         // gsap.to(tree.rotation, { duration: 6, y: 2 });
+    //       }
+    //     }
+    //   };
+    //   renderForest();
+
+    //   forest.position.set(40, 5, -20);
+    //   scene.add(forest);
+    //   // physics.add.existing(forest);
+    //   factory.add.existing(forest);
+    //   // physics.physicsWorld.add.existing(forest);
+    //   updateAllMaterials(scene, enviormentMapTexture);
+    // };
     // currentControlObject = ship;
     // currentControlObjectType = 'Ship';
 
