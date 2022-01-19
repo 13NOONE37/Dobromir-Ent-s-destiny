@@ -19,6 +19,7 @@ const initBasics = () => {
     canvas: canvas,
   });
   renderer.setSize(sizes.width, sizes.height);
+  renderer.setClearColor(0x101000);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap;
@@ -34,6 +35,8 @@ const initBasics = () => {
     0.1,
     10000,
   );
+  camera.layers.enable(1);
+
   camera.position.set(0, 15, 15);
   scene.add(camera);
 
@@ -65,8 +68,8 @@ const initBasics = () => {
   const renderScene = new RenderPass(scene, camera);
   const params = {
     exposure: 1,
-    bloomStrength: 0, //1.5,
-    bloomThreshold: 0,
+    bloomStrength: 1.5, //1.5,
+    bloomThreshold: 0.15,
     bloomRadius: 0,
   };
   const bloomPass = new UnrealBloomPass(
@@ -78,10 +81,17 @@ const initBasics = () => {
   bloomPass.threshold = params.bloomThreshold;
   bloomPass.strength = params.bloomStrength;
   bloomPass.radius = params.bloomRadius;
+  bloomPass.renderToScreen = true;
 
   composer = new EffectComposer(renderer);
+  composer.setSize(sizes.width, sizes.height);
+
   composer.addPass(renderScene);
   composer.addPass(bloomPass);
+
+  // renderer.gammaInput = true;
+  // renderer.gammaOutput = true;
+
   gui.add(params, 'exposure', 0.1, 2).onChange(function (value) {
     renderer.toneMappingExposure = Math.pow(value, 4.0);
   });

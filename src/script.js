@@ -6,7 +6,7 @@ import { Water } from 'three/examples/jsm/objects/Water';
 import initWeatherControler from './Assets/Config/WeatherControler';
 import initLoadingManagers from './Assets/Config/LoadingManagers';
 import initBasics from './Assets/Config/InitBasics';
-import initInputControler from './Assets/Config/InputControler';
+import initControler from './Assets/Config/InputControler';
 import updateAllMaterials from './Assets/Config/UpdateAllMaterials';
 import GenerateGround from './Assets/Enviorment/GenerateGround';
 
@@ -23,8 +23,7 @@ import ThirdPersonCamera from './Assets/Config/ThirdPersonCamera';
 const MainScene = () => {
   const [renderer, camera, controls, scene, composer, gui] = initBasics();
 
-  let currentControlObject = null,
-    currentControlObjectType = 'Character';
+  const currentObject = initControler();
 
   //Animate
   let stats = new Stats();
@@ -53,164 +52,24 @@ const MainScene = () => {
   cameraFolder.add(cameraDebug, 'offsetZ').min(-100).max(100).name('offsetZ');
 
   const renderBasic = () => {
-    // renderer.render(scene, camera);
+    renderer.render(scene, camera);
+    renderer.autoClear = false;
+    renderer.clear();
+    camera.layers.set(1);
     composer.render();
+    renderer.clearDepth();
+    camera.layers.set(0);
+    renderer.render(scene, camera);
     // sunLight.target = currentControlObject; // camera look at controlObject
   };
 
-  let xspeed = { value: 1.7 };
-  gui.add(xspeed, 'value').min(1).max(5);
-
-  const objectControler = (elapsedTime, controlObject, typeOfObject) => {
-    if (typeOfObject == 'Character') {
-      //Dobromir
-      if (
-        czesioWalkAction &&
-        !keys.forward &&
-        !keys.backward &&
-        !keys.left &&
-        !keys.right
-      ) {
-        czesioWalkAction.stop();
-        czesioIdleAction.play();
-      }
-
-      const speed = xspeed.value;
-      const rotation = controlObject.getWorldDirection(
-        controlObject.rotation.toVector3(),
-      );
-
-      const theta = Math.atan2(rotation.x, rotation.z);
-
-      if (keys.forward) {
-        console.log(controlObject);
-        const x = Math.sin(theta) * speed,
-          y = controlObject.body.velocity.y,
-          z = Math.cos(theta) * speed;
-
-        controlObject.body.setVelocity(x, y, z);
-        czesioWalkAction.play();
-        czesioIdleAction.stop();
-      }
-      if (keys.backward) {
-        const x = -Math.sin(theta) * speed,
-          y = controlObject.body.velocity.y,
-          z = -Math.cos(theta) * speed;
-        controlObject.body.setVelocity(x, y, z);
-        czesioWalkAction.play();
-        czesioIdleAction.stop();
-      }
-      if (keys.left) {
-        controlObject.body.setAngularVelocityY(1.5);
-      } else if (keys.right) {
-        controlObject.body.setAngularVelocityY(-1.5);
-      } else {
-        controlObject.body.setAngularVelocityY(0);
-      }
-      if (keys.space && keys.canJump) {
-        keys.canJump = false;
-        keys.isJumping = true;
-        czesioJumpAction.stop();
-        czesioJumpAction.play();
-        setTimeout(() => {
-          controlObject.body.setVelocityY(10);
-          keys.canJump = true;
-        }, 200);
-        setTimeout(() => (keys.isJumping = false), 200);
-      }
-
-      //Sprint
-      if (keys.shift) {
-        xspeed.value = 3.7;
-      }
-      if (!keys.shift) {
-        xspeed.value = 1.7;
-      }
-
-      //action
-      if (keys.action) {
-      }
-    }
-    if (typeOfObject == 'Ship') {
-      //Ship
-      if (
-        keys.mouse.x < window.innerWidth / 2 - window.innerWidth / 4 ||
-        keys.mouse.x > window.innerWidth / 2 + window.innerWidth / 4
-      ) {
-        //horizontaly
-        if (keys.mouse.x > window.innerWidth / 2) {
-          controlObject.body.setAngularVelocityY(-0.5);
-          //right
-        }
-        if (keys.mouse.x < window.innerWidth / 2) {
-          controlObject.body.setAngularVelocityY(0.5);
-          // left;
-        }
-      }
-      if (
-        keys.mouse.y < window.innerHeight / 2 - window.innerHeight / 4 ||
-        keys.mouse.y > window.innerHeight / 2 + window.innerHeight / 4
-      ) {
-        //verticaly
-      }
-      if (keys.space) {
-        controlObject.body.setVelocityY(10);
-      }
-
-      if (keys.forward) {
-        xspeed.value = 4;
-      }
-      if (keys.backward) {
-        xspeed.value = 1;
-      }
-      if (keys.left) {
-        controlObject.body.setAngularVelocityX(0.4);
-      }
-      if (keys.right) {
-        controlObject.body.setAngularVelocityX(-0.4);
-      }
-    }
-    if (typeOfObject == 'Car') {
-      //Ship
-    }
-    //Może Lepiej zrealizować te funkcje poprzez wysyłanie postaci aktualnie grywalnej do kontrolera i poruszania przez gsap
-  };
-  /*#TODO:jump
-  public wantsToJump: boolean = false;
-	public initJumpSpeed: number = -1;
-  
-  if (character.wantsToJump)
-		{
-			// If initJumpSpeed is set
-			if (character.initJumpSpeed > -1)
-			{
-				// Flatten velocity
-				body.velocity.y = 0;
-				let speed = Math.max(character.velocitySimulator.position.length() * 4, character.initJumpSpeed);
-				body.velocity = Utils.cannonVector(character.orientation.clone().multiplyScalar(speed));
-			}
-			else {
-				// Moving objects compensation
-				let add = new CANNON.Vec3();
-				character.rayResult.body.getVelocityAtWorldPoint(character.rayResult.hitPointWorld, add);
-				body.velocity.vsub(add, body.velocity);
-			}
-
-			// Add positive vertical velocity 
-			body.velocity.y += 4;
-			// Move above ground by 2x safe offset value
-			body.position.y += character.raySafeOffset * 2;
-			// Reset flag
-			character.wantsToJump = false;
-		}
-    */
   const updateEnviorment = (currentTime, deltaTime) => {
     //Update
     controls.update();
     mixer && mixer.update(deltaTime);
 
-    currentControlObject &&
-      ThirdPersonCamera(camera, currentControlObject, cameraDebug);
+    currentObject.object &&
+      ThirdPersonCamera(camera, currentObject.object, cameraDebug);
     //Sun update
     skyEffectControler.elevation = ((currentTime / 50) % 180) + 1;
     skyGuiChanged();
@@ -228,17 +87,12 @@ const MainScene = () => {
     const elapsedTime = clock.getElapsedTime();
     const deltaTime = elapsedTime - currentTime;
     currentTime = elapsedTime;
+
     //Physics
     physics.update(60);
     physics.updateDebugger();
 
-    objectControler(
-      elapsedTime,
-      currentControlObject,
-      currentControlObjectType,
-    );
-
-    updateEnviorment(currentTime, deltaTime);
+    currentObject.object && updateEnviorment(currentTime, deltaTime);
     renderBasic(deltaTime);
 
     stats.end();
@@ -258,10 +112,8 @@ const MainScene = () => {
     initLoadingManagers(scene, init);
   const [sunLight, sunObject, skyEffectControler, skyGuiChanged, clouds] =
     initWeatherControler(renderer, scene, gui, modelLoader);
-  const keys = initInputControler();
 
   /*!---Content--! */
-
   const waterGeometry = new THREE.CircleBufferGeometry(10, 10);
 
   const water = new Water(waterGeometry, {
@@ -371,7 +223,7 @@ const MainScene = () => {
     // initForest(tree.scene.children[0]);
   });
 
-  let mixer = null;
+  let mixer;
   let czesioWalkAction, czesioIdleAction, czesioJumpAction;
 
   const box = new THREE.Mesh(
@@ -383,30 +235,42 @@ const MainScene = () => {
     }),
   );
   box.position.y = 1;
+  box.layers.enable(1);
   scene.add(box);
+
   modelLoader.load('/Assets/Characters/DobromirModel.glb', (model) => {
     const children = model.scene.children[0];
 
-    currentControlObject = new ExtendedObject3D();
-    currentControlObject.add(children);
-    currentControlObjectType = 'Character';
+    currentObject.object = new ExtendedObject3D();
+    currentObject.object.add(children);
+    currentObject.object.layers.enable(0);
+    currentObject.type = 'Character';
+    console.log(currentObject.object);
+    // currentControlObject.children[0].children[5].children[1].material.emissiveIntensity = 3;
+
+    // cameraDebug.lookX = 6;
+    // cameraDebug.lookY = -14;
+    // cameraDebug.lookZ = -100;
+    // cameraDebug.offsetX = 0;
+    // cameraDebug.offsetY = 1.9;
+    // cameraDebug.offsetZ = 4.1;
 
     //lookX:-1,y:-6,z:48,x:0,y:1.9:z:-3.7
 
     // czesio.scale.set(0.4, 0.4, 0.4);
     // czesio.position.y = 2;
-    scene.add(currentControlObject);
-    physics.add.existing(currentControlObject, {
+    scene.add(currentObject.object);
+    physics.add.existing(currentObject.object, {
       mass: 20,
       shape: 'capsule',
       radius: 1.55,
-      height: currentControlObject.scale.y,
+      height: currentObject.object.scale.y,
       offset: { y: -2.3 }, //-0.75
     });
-    currentControlObject.body.setFriction(0.8);
-    currentControlObject.body.setAngularFactor(0, 0, 0);
+    currentObject.object.body.setFriction(0.8);
+    currentObject.object.body.setAngularFactor(0, 0, 0);
 
-    mixer = new THREE.AnimationMixer(currentControlObject);
+    mixer = new THREE.AnimationMixer(currentObject.object);
 
     czesioWalkAction = mixer.clipAction(model.animations[4]);
     czesioJumpAction = mixer.clipAction(model.animations[3]);
@@ -414,7 +278,6 @@ const MainScene = () => {
 
     czesioIdleAction = mixer.clipAction(model.animations[2]);
     czesioIdleAction.setDuration(8);
-    console.log(currentControlObject);
   });
 
   //Rat's John
