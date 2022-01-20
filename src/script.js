@@ -198,18 +198,6 @@ const MainScene = () => {
   let mixer;
   let czesioWalkAction, czesioIdleAction, czesioJumpAction;
 
-  const box = new THREE.Mesh(
-    new THREE.BoxBufferGeometry(5, 5, 5),
-    new THREE.MeshStandardMaterial({
-      color: 0xecff4a,
-      emissive: 0xecff4a,
-      emissiveIntensity: 10,
-    }),
-  );
-  box.position.y = 1;
-  box.layers.enable(BLOOM_SCENE);
-  scene.add(box);
-
   //Dobromir
   modelLoader.load('/Assets/Characters/DobromirModel.glb', (model) => {
     const children = model.scene.children[0];

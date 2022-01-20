@@ -1,61 +1,49 @@
+const fadeToAction = (animation, duration) => {
+  previousAction = activeAction;
+  activeAction = animation;
+  // console.log(previousAction, activeAction);
+  if (previousAction !== activeAction) {
+    previousAction.fadeOut(duration);
+  }
+  activeAction
+    .reset()
+    .setEffectiveTimeScale(1)
+    .setEffectiveWeight(1)
+    .fadeIn(duration)
+    .play();
+};
 const handleControler = () => {
   if (currentObject.type == 'Character') {
-    //animation
-    switch (keys.motion) {
-      case 'FinchFist': {
-        break;
-      }
-      case 'Idle': {
-        currentObject.object.animations[2].stop();
-        currentObject.object.animations[3].stop();
-        currentObject.object.animations[4].stop();
-        currentObject.object.animations[1].play();
-        break;
-      }
-      case 'Jump': {
-        currentObject.object.animations[2].play();
-        break;
-      }
-      case 'Run': {
-        currentObject.object.animations[4].stop();
-        currentObject.object.animations[3].play();
-        break;
-      }
-      case 'Walk': {
-        currentObject.object.animations[4].play();
-        break;
-      }
-    }
     //Dobromir
     if (!keys.forward && !keys.backward && !keys.left && !keys.right) {
-      keys.motion = 'Idle';
+      if (activeAction === undefined) {
+        activeAction = currentObject.object.animations[1];
+        currentObject.object.animations[1].play();
+      } else if (activeAction !== currentObject.object.animations[1]) {
+        fadeToAction(currentObject.object.animations[1], 0.5);
+      }
     }
 
     const rotation = currentObject.object.getWorldDirection(
       currentObject.object.rotation.toVector3(),
     );
-
     const theta = Math.atan2(rotation.x, rotation.z);
-
-    if (keys.forward) {
+    if (keys.forward && !keys.shift) {
       const x = Math.sin(theta) * keys.speed,
         y = currentObject.object.body.velocity.y,
         z = Math.cos(theta) * keys.speed;
 
       currentObject.object.body.setVelocity(x, y, z);
-      keys.motion = 'Walk';
-      // currentObject.object.animations[4].play();
-      // currentObject.object.animations[1].stop();
+      activeAction !== currentObject.object.animations[4] &&
+        fadeToAction(currentObject.object.animations[4], 0.5);
     }
     if (keys.backward) {
       const x = -Math.sin(theta) * keys.speed,
         y = currentObject.object.body.velocity.y,
         z = -Math.cos(theta) * keys.speed;
       currentObject.object.body.setVelocity(x, y, z);
-      keys.motion = 'Walk';
-
-      // currentObject.object.animations[4].play();
-      // currentObject.object.animations[1].stop();
+      activeAction !== currentObject.object.animations[4] &&
+        fadeToAction(currentObject.object.animations[4], 0.5);
     }
     if (keys.left) {
       currentObject.object.body.setAngularVelocityY(1.5);
@@ -64,16 +52,12 @@ const handleControler = () => {
     } else {
       currentObject.object.body.setAngularVelocityY(0);
     }
+
     if (keys.space && keys.canJump) {
       keys.canJump = false;
       keys.isJumping = true;
-      keys.motion = 'Jump';
 
-      // currentObject.object.animations[1].stop();
-      // currentObject.object.animations[2].play();
-      // console.log(currentObject.object.animations);
-      // czesioJumpAction.stop();
-      // czesioJumpAction.play();
+      currentObject.object.animations[2].play();
       setTimeout(() => {
         currentObject.object.body.setVelocityY(10);
         keys.canJump = true;
@@ -83,8 +67,15 @@ const handleControler = () => {
 
     //Sprint
     if (keys.forward && keys.shift) {
-      // keys.speed = 3.7;
-      keys.motion = 'Run';
+      keys.speed = 3.7;
+      const x = Math.sin(theta) * keys.speed,
+        y = currentObject.object.body.velocity.y,
+        z = Math.cos(theta) * keys.speed;
+
+      currentObject.object.body.setVelocity(x, y, z);
+
+      activeAction !== currentObject.object.animations[3] &&
+        fadeToAction(currentObject.object.animations[3], 0.5);
     }
     if (!keys.shift) {
       if (keys.speed != 1.7) keys.speed = 1.7;
@@ -137,6 +128,9 @@ const handleControler = () => {
     //Ship
   }
 };
+
+const api = { state: 'Walking' };
+let activeAction, previousAction;
 
 const currentObject = { object: undefined, type: undefined };
 const keys = {
