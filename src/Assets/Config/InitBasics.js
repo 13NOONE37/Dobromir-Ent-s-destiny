@@ -5,14 +5,8 @@ import * as dat from 'dat.gui';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass';
-import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js';
 
 const initBasics = () => {
-  const ENTIRE_SCENE = 0,
-    BLOOM_SCENE = 1;
-  const bloomLayer = new THREE.Layers();
-  bloomLayer.set(BLOOM_SCENE);
-
   //Basic
   const sizes = {
     width: window.innerWidth,
@@ -40,7 +34,6 @@ const initBasics = () => {
     0.1,
     10000,
   );
-
   camera.position.set(0, 15, 15);
   scene.add(camera);
 
@@ -67,33 +60,12 @@ const initBasics = () => {
     composer.setSize(sizes.width, sizes.height);
   });
 
-  var obj = new THREE.Mesh(
-    new THREE.BoxGeometry(5, 5, 4),
-    new THREE.MeshLambertMaterial({
-      color: 0x150505,
-      wireframe: false,
-    }),
-  );
-  obj.position.z = 0.25;
-  scene.add(obj);
-
-  var objBack = new THREE.Mesh(
-    new THREE.BoxGeometry(5, 5, 1),
-    new THREE.MeshBasicMaterial({
-      color: 'red',
-      wireframe: false,
-    }),
-  );
-  objBack.position.z = -2.25;
-  objBack.layers.enable(BLOOM_SCENE);
-  scene.add(objBack);
-
   //Postprocesing
   const renderScene = new RenderPass(scene, camera);
   const params = {
     exposure: 1,
-    bloomStrength: 1.5, //1.5,
-    bloomThreshold: 0.15,
+    bloomStrength: 2, //1.5,
+    bloomThreshold: 0,
     bloomRadius: 0,
   };
   const bloomPass = new UnrealBloomPass(
@@ -149,16 +121,6 @@ const initBasics = () => {
   //   encoding: THREE.sRGBEncoding,
   // });
 
-  return [
-    renderer,
-    camera,
-    controls,
-    scene,
-    composer,
-    ENTIRE_SCENE,
-    BLOOM_SCENE,
-
-    gui,
-  ];
+  return [renderer, camera, controls, scene, composer, gui];
 };
 export default initBasics;

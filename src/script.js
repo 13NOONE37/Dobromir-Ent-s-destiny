@@ -21,16 +21,7 @@ import InitStaticModel from './Assets/Utils/InitStaticModel';
 import ThirdPersonCamera from './Assets/Config/ThirdPersonCamera';
 
 const MainScene = () => {
-  const [
-    renderer,
-    camera,
-    controls,
-    scene,
-    composer,
-    ENTIRE_SCENE,
-    BLOOM_SCENE,
-    gui,
-  ] = initBasics();
+  const [renderer, camera, controls, scene, composer, gui] = initBasics();
 
   const [currentObject, handleControler] = initControler();
 
@@ -42,6 +33,8 @@ const MainScene = () => {
   const clock = new THREE.Clock();
   let currentTime = 0;
 
+  const spot = new THREE.SpotLight(0xff00ff, 150, 50);
+  scene.add(spot);
   //Camera
   const cameraDebug = {
     lookX: 0,
@@ -61,20 +54,8 @@ const MainScene = () => {
   cameraFolder.add(cameraDebug, 'offsetZ').min(-100).max(100).name('offsetZ');
 
   const renderBasic = () => {
-    renderer.autoClear = false;
-    renderer.clear();
-
-    camera.layers.set(BLOOM_SCENE);
-    composer.render();
-
-    renderer.clearDepth();
-    camera.layers.set(ENTIRE_SCENE);
-    renderer.render(scene, camera);
-
-    // camera.layers.set(BLOOM_SCENE);
     // composer.render();
-    // camera.layers.set(ENTIRE_SCENE);
-    // renderer.render(scene, camera);
+    renderer.render(scene, camera);
     // sunLight.target = currentControlObject; // camera look at controlObject
   };
   const updateEnviorment = (currentTime, deltaTime) => {
@@ -196,15 +177,122 @@ const MainScene = () => {
   );
 
   let mixer;
-  let czesioWalkAction, czesioIdleAction, czesioJumpAction;
 
+  const createCompoundFromData = (group, data) => {
+    const universalMaterial = new THREE.MeshBasicMaterial({
+      wireframe: true,
+    });
+    data.forEach((item) => {
+      switch (item.type) {
+        case 'box': {
+          const box = new THREE.Mesh(
+            new BoxBufferGeometry(...item.geometry),
+            universalMaterial,
+          );
+          box.position.set(item.position.x, item.position.y, item.position.z);
+          group.add(box);
+          break;
+        }
+        case 'cylinder': {
+          const cylinder = new THREE.Mesh(
+            new THREE.CylinderBufferGeometry(...item.geometry),
+            universalMaterial,
+          );
+          cylinder.position.set(
+            item.position.x,
+            item.position.y,
+            item.position.z,
+          );
+          group.add(cylinder);
+          break;
+        }
+      }
+    });
+  };
+
+  const data = [
+    {
+      type: 'cylinder',
+      geometry: [
+        4, //radiusTop
+        4, //radiusBottom
+        2, //height
+        24, //radiusSegments
+      ],
+      position: {
+        x: 0,
+        z: 0,
+        y: 10,
+      },
+    },
+    {
+      type: 'cylinder',
+      geometry: [
+        4, //radiusTop
+        4, //radiusBottom
+        2, //height
+        24, //radiusSegments
+      ],
+      position: {
+        x: 0,
+        z: 0,
+        y: -10,
+      },
+    },
+    {
+      type: 'cylinder',
+      geometry: [
+        1, //radiusTop
+        1, //radiusBottom
+        20, //height
+        4, //radiusSegments
+      ],
+      position: {
+        x: 0,
+        z: 0,
+        y: 0,
+      },
+    },
+  ];
+  const wheel = new THREE.Group();
+  createCompoundFromData(wheel, data);
+
+  wheel.rotateZ(Math.PI / 2);
+  wheel.position.z += 20;
+  wheel.position.y += 6;
+
+  const box = new THREE.Mesh(new THREE.BoxBufferGeometry(1, 1, 1));
+  box.position.set(0, 10, 10);
+  scene.add(box);
+
+  const compound = [
+    { shape: 'box', width: 0.5, height: 1, depth: 0.4, y: -0.5, z: 0.5 },
+    { shape: 'box', width: 2.4, height: 0.6, depth: 0.4, z: -0.4, y: 0.2 },
+    { shape: 'sphere', radius: 0.65, z: -0.25, y: 0.35 },
+    { shape: 'box', width: 1.5, height: 0.8, depth: 1, y: 0.2, z: 0.2 },
+  ];
+  physics.add.existing(box, {
+    compound,
+    shape: 'compound',
+    addChildren: false,
+    autoCenter: false,
+    fractureImpulse: new THREE.Vector3(0, 5, 0),
+  });
+
+  // scene.add(wheelLook);
+  // physics.add
+  // physics.add.existing(wheelLook, {
+  //   shape: 'compund',
+  //   compound: wheel,
+  //   mass: 1000,
+  // });
+  console.log(wheel);
   //Dobromir
   modelLoader.load('/Assets/Characters/DobromirModel.glb', (model) => {
     const children = model.scene.children[0];
 
     currentObject.object = new ExtendedObject3D();
     currentObject.object.add(children);
-    currentObject.object.layers.enable(BLOOM_SCENE);
     currentObject.type = 'Character';
     currentObject.object.scale.set(2, 2, 2);
 
@@ -453,95 +541,6 @@ const MainScene = () => {
     // cameraDebug.offsetY = 8.5;
     // cameraDebug.offsetZ = -0.3;
 
-    // const createCompoundFromData = (group, data) => {
-    //   const universalMaterial = new THREE.MeshBasicMaterial({
-    //     wireframe: true,
-    //   });
-    //   data.forEach((item) => {
-    //     switch (item.type) {
-    //       case 'box': {
-    //         const box = new THREE.Mesh(
-    //           new BoxBufferGeometry(...item.geometry),
-    //           universalMaterial,
-    //         );
-    //         box.position.set(item.position.x, item.position.y, item.position.z);
-    //         group.add(box);
-    //         break;
-    //       }
-    //       case 'cylinder': {
-    //         const cylinder = new THREE.Mesh(
-    //           new THREE.CylinderBufferGeometry(...item.geometry),
-    //           universalMaterial,
-    //         );
-    //         cylinder.position.set(
-    //           item.position.x,
-    //           item.position.y,
-    //           item.position.z,
-    //         );
-    //         group.add(cylinder);
-    //         break;
-    //       }
-    //     }
-    //   });
-    // };
-
-    // const data = [
-    //   {
-    //     type: 'cylinder',
-    //     geometry: [
-    //       4, //radiusTop
-    //       4, //radiusBottom
-    //       2, //height
-    //       24, //radiusSegments
-    //     ],
-    //     position: {
-    //       x: 0,
-    //       z: 0,
-    //       y: 10,
-    //     },
-    //   },
-    //   {
-    //     type: 'cylinder',
-    //     geometry: [
-    //       4, //radiusTop
-    //       4, //radiusBottom
-    //       2, //height
-    //       24, //radiusSegments
-    //     ],
-    //     position: {
-    //       x: 0,
-    //       z: 0,
-    //       y: -10,
-    //     },
-    //   },
-    //   {
-    //     type: 'cylinder',
-    //     geometry: [
-    //       1, //radiusTop
-    //       1, //radiusBottom
-    //       20, //height
-    //       4, //radiusSegments
-    //     ],
-    //     position: {
-    //       x: 0,
-    //       z: 0,
-    //       y: 0,
-    //     },
-    //   },
-    // ];
-    // const wheel = new THREE.Group();
-    // createCompoundFromData(wheel, data);
-
-    // wheel.rotateZ(Math.PI / 2);
-    // wheel.position.z += 20;
-    // wheel.position.y += 6;
-
-    // scene.add(wheel);
-    // physics.add.existing(wheel, { mass: 1000 });
-    // physics.add.existing(ship, {
-    //   shape: 'hull',
-    // });
-
     // currentControlObject = ship;
 
     // InitStaticModel(
@@ -556,4 +555,5 @@ const MainScene = () => {
     // );
   });
 };
+
 PhysicsLoader('/Ammo/', () => MainScene());
