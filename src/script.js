@@ -19,6 +19,7 @@ import {
 
 import InitStaticModel from './Assets/Utils/InitStaticModel';
 import ThirdPersonCamera from './Assets/Config/ThirdPersonCamera';
+import getAnimationOrder from './Assets/Utils/getAnimationOrder';
 
 const MainScene = () => {
   const [renderer, camera, controls, scene, composer, gui] = initBasics();
@@ -295,22 +296,27 @@ const MainScene = () => {
     currentObject.object.add(children);
     currentObject.type = 'Character';
     currentObject.object.scale.set(2, 2, 2);
+    console.log(model.animations);
 
     mixer = new THREE.AnimationMixer(currentObject.object);
+
     for (const clip of model.animations) {
       const action = mixer.clipAction(clip);
       // action.clampWhenFinished = true;
-      if (clip.name == 'Jump') {
-        // action.setLoop(THREE.LoopOnce)
-        // action.clampWhenFinished = true;
-      }
-      currentObject.object.animations.push(action);
+      // if (clip.name == 'Jump') {
+      // action.setLoop(THREE.LoopOnce)
+      // action.clampWhenFinished = true;
+      // }
+      currentObject.object.animations[getAnimationOrder(clip.name)] = action;
     }
+    console.log(currentObject.object.animations);
 
+    currentObject.object.position.y = 10;
     scene.add(currentObject.object);
     physics.add.existing(currentObject.object, {
       mass: 100,
-      shape: 'convex',
+      shape: 'hull',
+      offset: { y: -2.75 },
       height: currentObject.object.scale.y,
     });
     currentObject.object.body.setFriction(0.8);

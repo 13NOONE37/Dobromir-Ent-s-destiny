@@ -1,3 +1,5 @@
+import getAnimationOrder from '../Utils/getAnimationOrder';
+
 const fadeToAction = (animation, duration) => {
   previousAction = activeAction;
   activeAction = animation;
@@ -14,36 +16,47 @@ const fadeToAction = (animation, duration) => {
 };
 const handleControler = () => {
   if (currentObject.type == 'Character') {
-    //Dobromir
-    if (!keys.forward && !keys.backward && !keys.left && !keys.right) {
-      if (activeAction === undefined) {
-        activeAction = currentObject.object.animations[1];
-        currentObject.object.animations[1].play();
-      } else if (activeAction !== currentObject.object.animations[1]) {
-        fadeToAction(currentObject.object.animations[1], 0.5);
-      }
-    }
-
     const rotation = currentObject.object.getWorldDirection(
       currentObject.object.rotation.toVector3(),
     );
     const theta = Math.atan2(rotation.x, rotation.z);
-    if (keys.forward && !keys.shift) {
-      const x = Math.sin(theta) * keys.speed,
-        y = currentObject.object.body.velocity.y,
-        z = Math.cos(theta) * keys.speed;
+    const x = Math.sin(theta) * keys.speed,
+      y = currentObject.object.body.velocity.y,
+      z = Math.cos(theta) * keys.speed;
 
+    //Dobromir
+    if (!keys.forward && !keys.backward && !keys.left && !keys.right) {
+      if (activeAction === undefined) {
+        activeAction =
+          currentObject.object.animations[getAnimationOrder('Idle')];
+        currentObject.object.animations[getAnimationOrder('Idle')].play();
+      } else if (
+        activeAction !==
+        currentObject.object.animations[getAnimationOrder('Idle')]
+      ) {
+        fadeToAction(
+          currentObject.object.animations[getAnimationOrder('Idle')],
+          0.5,
+        );
+      }
+    }
+    if (keys.forward && !keys.shift) {
       currentObject.object.body.setVelocity(x, y, z);
-      activeAction !== currentObject.object.animations[4] &&
-        fadeToAction(currentObject.object.animations[4], 0.5);
+      activeAction !==
+        currentObject.object.animations[getAnimationOrder('Walk')] &&
+        fadeToAction(
+          currentObject.object.animations[getAnimationOrder('Walk')],
+          0.5,
+        );
     }
     if (keys.backward) {
-      const x = -Math.sin(theta) * keys.speed,
-        y = currentObject.object.body.velocity.y,
-        z = -Math.cos(theta) * keys.speed;
-      currentObject.object.body.setVelocity(x, y, z);
-      activeAction !== currentObject.object.animations[4] &&
-        fadeToAction(currentObject.object.animations[4], 0.5);
+      currentObject.object.body.setVelocity(-x, y, -z);
+      activeAction !==
+        currentObject.object.animations[getAnimationOrder('Walk')] &&
+        fadeToAction(
+          currentObject.object.animations[getAnimationOrder('Walk')],
+          0.5,
+        );
     }
     if (keys.left) {
       currentObject.object.body.setAngularVelocityY(1.5);
@@ -53,15 +66,15 @@ const handleControler = () => {
       currentObject.object.body.setAngularVelocityY(0);
     }
 
-    if (keys.space && keys.canJump) {
+    if (keys.jump && keys.canJump) {
       keys.canJump = false;
       keys.isJumping = true;
 
-      currentObject.object.animations[2].play();
+      currentObject.object.animations[getAnimationOrder('Jump')].play();
       setTimeout(() => {
         currentObject.object.body.setVelocityY(10);
         keys.canJump = true;
-        currentObject.object.animations[2].stop();
+        currentObject.object.animations[getAnimationOrder('Jump')].stop();
       }, 200);
     }
 
@@ -74,8 +87,12 @@ const handleControler = () => {
 
       currentObject.object.body.setVelocity(x, y, z);
 
-      activeAction !== currentObject.object.animations[3] &&
-        fadeToAction(currentObject.object.animations[3], 0.5);
+      activeAction !==
+        currentObject.object.animations[getAnimationOrder('Run')] &&
+        fadeToAction(
+          currentObject.object.animations[getAnimationOrder('Run')],
+          0.5,
+        );
     }
     if (!keys.shift) {
       if (keys.speed != 1.7) keys.speed = 1.7;
@@ -83,6 +100,16 @@ const handleControler = () => {
 
     //action
     if (keys.action) {
+    }
+    //block
+    if (keys.block) {
+      // activeAction !==
+      //   currentObject.object.animations[getAnimationOrder('Guard')] &&
+      //   fadeToAction(
+      //     currentObject.object.animations[getAnimationOrder('Guard')],
+      //     0.5,
+      //   );
+      currentObject.object.animations[getAnimationOrder('Guard')].play();
     }
   }
   if (currentObject.type == 'Ship') {
@@ -107,7 +134,7 @@ const handleControler = () => {
     ) {
       //verticaly
     }
-    if (keys.space) {
+    if (keys.jump) {
       currentObject.object.body.setVelocityY(10);
     }
 
@@ -141,11 +168,15 @@ const keys = {
   backward: false,
   left: false,
   right: false,
-  space: false,
+  jump: false,
   canJump: true,
   isJumping: false,
   shift: false,
   action: false,
+  block: false,
+  leftMouse: false,
+  rightMouse: false,
+
   speed: 1.7,
 };
 const initInputControler = () => {
@@ -168,7 +199,7 @@ const initInputControler = () => {
         break;
 
       case 32: //space
-        keys.space = true;
+        keys.jump = true;
         break;
 
       case 16: //shift
@@ -177,6 +208,9 @@ const initInputControler = () => {
 
       case 69: //e
         keys.action = true;
+        break;
+      case 81: //q
+        keys.block = true;
         break;
     }
   };
@@ -198,8 +232,8 @@ const initInputControler = () => {
         keys.right = false;
         break;
 
-      case 32: //space
-        keys.space = false;
+      case 32: //jump
+        keys.jump = false;
         break;
 
       case 16: //shift
@@ -209,6 +243,9 @@ const initInputControler = () => {
       case 69: //e
         keys.action = false;
         break;
+      case 81: //q
+        keys.block = false;
+        break;
     }
   };
 
@@ -217,17 +254,19 @@ const initInputControler = () => {
   window.addEventListener('keyup', handleKeyUp);
 
   //!--Mouse
-  window.addEventListener('click', (e) => {
+  window.addEventListener('mousedown', (e) => {
     e.preventDefault();
-    // console.log("mouse click", e);
-  });
-  window.addEventListener('mousewheel', (e) => {
-    e.preventDefault();
-    // console.log("mouse wheel", e);
-  });
-  window.addEventListener('contextmenu', (e) => {
-    e.preventDefault();
-    // console.log("contextmenu", e);
+    switch (e.button) {
+      case 0: //lmb
+        keys.leftMouse = !keys.leftMouse;
+        break;
+      case 1: //middle
+        break;
+      case 2: //rmb
+        keys.rightMouse = !keys.rightMouse;
+
+        break;
+    }
   });
   window.addEventListener('mousemove', (e) => {
     keys.mousePrevious.x = keys.mouse.x;
