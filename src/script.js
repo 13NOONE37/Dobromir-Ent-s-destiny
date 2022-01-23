@@ -303,10 +303,10 @@ const MainScene = () => {
     for (const clip of model.animations) {
       const action = mixer.clipAction(clip);
       // action.clampWhenFinished = true;
-      // if (clip.name == 'Jump') {
-      // action.setLoop(THREE.LoopOnce)
-      // action.clampWhenFinished = true;
-      // }
+      if (clip.name == 'Guard' || clip.name == 'SwordAttack1') {
+        action.setLoop(THREE.LoopOnce);
+        action.clampWhenFinished = true;
+      }
       currentObject.object.animations[getAnimationOrder(clip.name)] = action;
     }
     console.log(currentObject.object.animations);

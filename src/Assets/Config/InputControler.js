@@ -25,7 +25,13 @@ const handleControler = () => {
       z = Math.cos(theta) * keys.speed;
 
     //Dobromir
-    if (!keys.forward && !keys.backward && !keys.left && !keys.right) {
+    if (
+      !keys.forward &&
+      !keys.backward &&
+      !keys.left &&
+      !keys.right &&
+      !keys.rightMouse
+    ) {
       if (activeAction === undefined) {
         activeAction =
           currentObject.object.animations[getAnimationOrder('Idle')];
@@ -38,6 +44,7 @@ const handleControler = () => {
           currentObject.object.animations[getAnimationOrder('Idle')],
           0.5,
         );
+        keys.isBlocking = false;
       }
     }
     if (keys.forward && !keys.shift) {
@@ -75,7 +82,7 @@ const handleControler = () => {
         currentObject.object.body.setVelocityY(10);
         keys.canJump = true;
         currentObject.object.animations[getAnimationOrder('Jump')].stop();
-      }, 200);
+      }, 1200);
     }
 
     //Sprint
@@ -101,15 +108,44 @@ const handleControler = () => {
     //action
     if (keys.action) {
     }
-    //block
-    if (keys.block) {
-      // activeAction !==
-      //   currentObject.object.animations[getAnimationOrder('Guard')] &&
-      //   fadeToAction(
-      //     currentObject.object.animations[getAnimationOrder('Guard')],
-      //     0.5,
-      //   );
-      currentObject.object.animations[getAnimationOrder('Guard')].play();
+    //sign
+    if (keys.sign) {
+      // if (
+      //   activeAction !==
+      //   currentObject.object.animations[getAnimationOrder('Guard')]
+      // ) {
+      //   currentObject.object.animations[getAnimationOrder('Guard')].play();
+      //   activeAction =
+      //     currentObject.object.animations[getAnimationOrder('Guard')];
+      // }
+    }
+
+    //leftMouse
+    if (keys.leftMouse) {
+      console.log('Left mouse, active: ', activeAction._clip.name);
+    }
+
+    if (keys.rightMouse && !keys.isBlocking) {
+      console.log(keys.isBlocking);
+      if (keys.isSwordInHand) {
+        if (
+          activeAction !==
+          currentObject.object.animations[getAnimationOrder('SwordGuard')]
+        ) {
+          keys.isBlocking = true;
+          currentObject.object.animations[
+            getAnimationOrder('SwordGuard')
+          ].play();
+        }
+      } else {
+        if (
+          activeAction !==
+          currentObject.object.animations[getAnimationOrder('Guard')]
+        ) {
+          keys.isBlocking = true;
+          currentObject.object.animations[getAnimationOrder('Guard')].play();
+        }
+      }
     }
   }
   if (currentObject.type == 'Ship') {
@@ -156,7 +192,6 @@ const handleControler = () => {
   }
 };
 
-const api = { state: 'Walking' };
 let activeAction, previousAction;
 
 const currentObject = { object: undefined, type: undefined };
@@ -173,10 +208,11 @@ const keys = {
   isJumping: false,
   shift: false,
   action: false,
-  block: false,
+  sign: false,
   leftMouse: false,
   rightMouse: false,
-
+  isBlocking: false,
+  isSwordInHand: true,
   speed: 1.7,
 };
 const initInputControler = () => {
@@ -210,7 +246,7 @@ const initInputControler = () => {
         keys.action = true;
         break;
       case 81: //q
-        keys.block = true;
+        keys.sign = true;
         break;
     }
   };
@@ -244,7 +280,7 @@ const initInputControler = () => {
         keys.action = false;
         break;
       case 81: //q
-        keys.block = false;
+        keys.sign = false;
         break;
     }
   };
@@ -258,12 +294,26 @@ const initInputControler = () => {
     e.preventDefault();
     switch (e.button) {
       case 0: //lmb
-        keys.leftMouse = !keys.leftMouse;
+        keys.leftMouse = true;
         break;
       case 1: //middle
         break;
       case 2: //rmb
-        keys.rightMouse = !keys.rightMouse;
+        keys.rightMouse = true;
+
+        break;
+    }
+  });
+  window.addEventListener('mouseup', (e) => {
+    e.preventDefault();
+    switch (e.button) {
+      case 0: //lmb
+        keys.leftMouse = false;
+        break;
+      case 1: //middle
+        break;
+      case 2: //rmb
+        keys.rightMouse = false;
 
         break;
     }
