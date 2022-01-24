@@ -24,8 +24,7 @@ import getAnimationOrder from './Assets/Utils/getAnimationOrder';
 const MainScene = () => {
   const [renderer, camera, controls, scene, composer, gui] = initBasics();
 
-  const [currentObject, handleControler] = initControler();
-
+  const [currentObject, handleControler] = initControler(gui);
   //Animate
   let stats = new Stats();
   stats.showPanel(0);

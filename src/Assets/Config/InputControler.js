@@ -40,11 +40,12 @@ const handleControler = () => {
         activeAction !==
         currentObject.object.animations[getAnimationOrder('Idle')]
       ) {
+        keys.isBlocking = false;
+        // currentObject.object.animations[getAnimationOrder('SwordGuard')].stop();
         fadeToAction(
           currentObject.object.animations[getAnimationOrder('Idle')],
           0.5,
         );
-        keys.isBlocking = false;
       }
     }
     if (keys.forward && !keys.shift) {
@@ -73,16 +74,23 @@ const handleControler = () => {
       currentObject.object.body.setAngularVelocityY(0);
     }
 
-    if (keys.jump && keys.canJump) {
-      keys.canJump = false;
-      keys.isJumping = true;
-
-      currentObject.object.animations[getAnimationOrder('Jump')].play();
-      setTimeout(() => {
-        currentObject.object.body.setVelocityY(10);
-        keys.canJump = true;
-        currentObject.object.animations[getAnimationOrder('Jump')].stop();
-      }, 1200);
+    if (keys.jump && keys.canJump && !keys.isJumping) {
+      console.log('Jump exexcution, canJumpState: ', keys.canJump);
+      if (keys.canJump) {
+        currentObject.object.animations[getAnimationOrder('Jump')].play();
+        keys.canJump = false;
+        keys.isJumping = true;
+        setTimeout(() => {
+          currentObject.object.body.setVelocityY(10);
+          console.log('change');
+          keys.isJumping = false;
+          currentObject.object.animations[getAnimationOrder('Jump')].stop();
+        }, 150);
+      }
+    }
+    if (!keys.jump && !keys.isJumping) {
+      keys.canJump = true;
+      // console.log(currentObject.object.body);
     }
 
     //Sprint
@@ -133,9 +141,10 @@ const handleControler = () => {
           currentObject.object.animations[getAnimationOrder('SwordGuard')]
         ) {
           keys.isBlocking = true;
-          currentObject.object.animations[
-            getAnimationOrder('SwordGuard')
-          ].play();
+          fadeToAction(
+            currentObject.object.animations[getAnimationOrder('SwordGuard')],
+            0.5,
+          );
         }
       } else {
         if (
@@ -143,7 +152,10 @@ const handleControler = () => {
           currentObject.object.animations[getAnimationOrder('Guard')]
         ) {
           keys.isBlocking = true;
-          currentObject.object.animations[getAnimationOrder('Guard')].play();
+          fadeToAction(
+            currentObject.object.animations[getAnimationOrder('Guard')],
+            0.5,
+          );
         }
       }
     }
@@ -326,7 +338,11 @@ const initInputControler = () => {
     //
   });
 };
-const initControler = () => {
+const initControler = (gui) => {
+  gui.add(keys, 'isSwordInHand').onChange((e) => {
+    currentObject.object.children[0].children[0].children[0].children[0].children[2].children[0].children[0].children[2].children[1].visible =
+      e;
+  });
   initInputControler();
   return [currentObject, handleControler];
 };
