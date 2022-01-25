@@ -29,7 +29,7 @@ const initWeatherControler = (renderer, scene, gui, modelLoader) => {
   directionalLight.shadow.mapSize.width = 1024 * 4;
   directionalLight.shadow.mapSize.height = 1024 * 4;
 
-  const d = 100;
+  const d = 75;
 
   directionalLight.shadow.camera.left = -d;
   directionalLight.shadow.camera.top = d;
@@ -37,7 +37,7 @@ const initWeatherControler = (renderer, scene, gui, modelLoader) => {
   directionalLight.shadow.camera.bottom = -d;
 
   directionalLight.shadow.bias = -0.0001;
-  directionalLight.shadow.camera.far = 500;
+  directionalLight.shadow.camera.far = 200;
 
   scene.add(
     directionalLight,

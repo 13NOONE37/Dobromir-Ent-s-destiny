@@ -24,6 +24,7 @@ import getAnimationOrder from './Assets/Utils/getAnimationOrder';
 const MainScene = () => {
   const [renderer, camera, controls, scene, composer, gui] = initBasics();
 
+  let mixer;
   const [currentObject, handleControler] = initControler(gui);
   //Animate
   let stats = new Stats();
@@ -176,8 +177,6 @@ const MainScene = () => {
     { custom: groundMaterial },
   );
 
-  let mixer;
-
   const createCompoundFromData = (group, data) => {
     const universalMaterial = new THREE.MeshBasicMaterial({
       wireframe: true,
@@ -288,7 +287,7 @@ const MainScene = () => {
   // });
   console.log(wheel);
   //Dobromir
-  modelLoader.load('/Assets/Characters/DobromirModel.glb', (model) => {
+  modelLoader.load('/Assets/Characters/DobromirModel2.glb', (model) => {
     const children = model.scene.children[0];
 
     currentObject.object = new ExtendedObject3D();
@@ -299,12 +298,20 @@ const MainScene = () => {
 
     mixer = new THREE.AnimationMixer(currentObject.object);
 
+    const clampTypes = [
+      'Guard',
+      'SwordGuard',
+      'LeftJab',
+      'RightJab',
+      // 'SwordAttack1',
+    ];
     for (const clip of model.animations) {
       const action = mixer.clipAction(clip);
       // action.clampWhenFinished = true;
-      if (clip.name == 'Guard' || clip.name == 'SwordAttack1') {
+      if (clampTypes.includes(clip.name)) {
         action.setLoop(THREE.LoopOnce);
         action.clampWhenFinished = true;
+        action.weight = 1;
       }
       currentObject.object.animations[getAnimationOrder(clip.name)] = action;
     }
