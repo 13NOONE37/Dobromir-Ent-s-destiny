@@ -34,7 +34,9 @@ const MainScene = () => {
   const clock = new THREE.Clock();
   let currentTime = 0;
 
-  const spot = new THREE.SpotLight(0xff00ff, 150, 50);
+  const spot = new THREE.SpotLight(0xffffff, 50, 50, Math.PI, 100);
+  spot.rotation.x = Math.PI;
+  spot.position.set(0, 8, -20);
   scene.add(spot);
   //Camera
   const cameraDebug = {
@@ -287,7 +289,7 @@ const MainScene = () => {
   // });
   console.log(wheel);
   //Dobromir
-  modelLoader.load('/Assets/Characters/DobromirModel2.glb', (model) => {
+  modelLoader.load('/Assets/Characters/DobromirModel.glb', (model) => {
     const children = model.scene.children[0];
 
     currentObject.object = new ExtendedObject3D();
@@ -301,8 +303,8 @@ const MainScene = () => {
     const clampTypes = [
       'Guard',
       'SwordGuard',
-      'LeftJab',
-      'RightJab',
+      // 'LeftJab',
+      // 'RightJab',
       // 'SwordAttack1',
     ];
     for (const clip of model.animations) {
@@ -492,16 +494,16 @@ const MainScene = () => {
     // TODO: we have to make it dynamic object
     const ship = model.scene.getObjectByName('Ship', true);
     ship.position.set(4, 5, 0);
-    ship.scale.set(2, 2, 2);
+    ship.scale.set(2.5, 2.5, 2.5);
 
     scene.add(ship);
     physics.add.existing(ship, {
-      shape: 'box',
+      shape: 'hull',
       width: 7,
-      depth: 5,
+      depth: 5.5,
       height: 3,
       // offset: { z: -2, y: 0.5 },
-      offset: { z: 0, x: 2, y: 0.5 },
+      offset: { z: 0, x: 1.5, y: 0.5 },
       mass: 1000,
     });
 

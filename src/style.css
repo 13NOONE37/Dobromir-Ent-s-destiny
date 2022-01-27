@@ -14,3 +14,74 @@ body {
   left: 0;
   outline: none;
 }
+.quickMenu {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  box-shadow: inset 0 0 4px 1000px rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(5px);
+
+  display: grid;
+  place-items: center;
+  font-family: 'thewitcher';
+}
+.circleMenu {
+  /* grid-area: 1/1/1/2 span; */
+}
+.circleMenu button {
+  position: relative;
+
+  box-sizing: content-box;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  outline: none;
+  border: none;
+
+  background-color: rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  /* gap: 4px; */
+  align-items: center;
+
+  font-family: inherit;
+  font-size: 16px;
+}
+.circleMenu button::after {
+  content: '';
+  box-sizing: border-box;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 6px solid #2f4353;
+}
+.circleMenu button svg {
+  width: 40px;
+}
+.igni svg {
+  fill: #cd4762;
+  filter: drop-shadow(0 0 10px rgb(205, 71, 98));
+}
+.axii svg {
+  fill: #d5bf64;
+}
+.aard svg {
+  fill: #47aacc;
+}
+.quen svg {
+  fill: #61cd47;
+}
+.yrden svg {
+  fill: #bb47cd;
+}
+
+/* .quickFunctions {
+  grid-area: 2/1/2/1;
+}
+.copyRights {
+  grid-area: 2/2/2/2 span;
+} */

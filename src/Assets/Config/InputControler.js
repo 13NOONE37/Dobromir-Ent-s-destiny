@@ -135,6 +135,7 @@ const handleControler = () => {
           // currentObject.object.animations[
           //   getAnimationOrder('SwordAttack1')
           // ].play();
+
           fadeToAction(
             currentObject.object.animations[getAnimationOrder('SwordAttack1')],
             0.2,
@@ -147,7 +148,7 @@ const handleControler = () => {
         ) {
           fadeToAction(
             currentObject.object.animations[getAnimationOrder('LeftJab')],
-            1,
+            0.2,
           );
         }
       }
@@ -173,7 +174,7 @@ const handleControler = () => {
           keys.isBlocking = true;
           fadeToAction(
             currentObject.object.animations[getAnimationOrder('Guard')],
-            0.5,
+            0.1,
           );
         }
       }
