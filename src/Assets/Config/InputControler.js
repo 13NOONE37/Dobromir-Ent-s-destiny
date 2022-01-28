@@ -1,4 +1,5 @@
 import getAnimationOrder from '../Utils/getAnimationOrder';
+import { showQuickMenu, hideQuickMenu } from './QuickMenuControl';
 
 const fadeToAction = (animation, duration) => {
   previousAction = activeAction;
@@ -228,95 +229,106 @@ let activeAction, previousAction;
 
 const currentObject = { object: undefined, type: undefined };
 const keys = {
-  motion: 'Idle',
   mouse: { x: 0, y: 0 },
   mousePrevious: { x: 0, y: 0 },
+  leftMouse: false,
+  rightMouse: false,
+
   forward: false,
   backward: false,
   left: false,
   right: false,
+  shift: false,
+
   jump: false,
   canJump: true,
   isJumping: false,
-  shift: false,
+
   action: false,
   sign: false,
-  leftMouse: false,
-  rightMouse: false,
-  isBlocking: false,
+  currentSign: 'igni',
   isSwordInHand: true,
+  isBlocking: false,
   speed: 1.7,
 };
 const initInputControler = () => {
   const handleKeyDown = (e) => {
-    switch (e.keyCode) {
-      case 87: //w
-        keys.forward = true;
-        break;
+    if (!e.repeat) {
+      switch (e.keyCode) {
+        case 87: //w
+          keys.forward = true;
+          break;
 
-      case 83: //s
-        keys.backward = true;
-        break;
+        case 83: //s
+          keys.backward = true;
+          break;
 
-      case 65: //a
-        keys.left = true;
-        break;
+        case 65: //a
+          keys.left = true;
+          break;
 
-      case 68: //d
-        keys.right = true;
-        break;
+        case 68: //d
+          keys.right = true;
+          break;
 
-      case 32: //space
-        keys.jump = true;
-        break;
+        case 32: //space
+          keys.jump = true;
+          break;
 
-      case 16: //shift
-        keys.shift = true;
-        break;
+        case 16: //shift
+          keys.shift = true;
+          break;
 
-      case 69: //e
-        keys.action = true;
-        break;
-      case 81: //q
-        keys.sign = true;
-        break;
+        case 69: //e
+          keys.action = true;
+
+          break;
+        case 81: //q
+          keys.sign = true;
+          showQuickMenu(keys);
+          break;
+      }
     }
   };
   const handleKeyUp = (e) => {
-    switch (e.keyCode) {
-      case 87: //w
-        keys.forward = false;
-        break;
+    if (!e.repeat) {
+      switch (e.keyCode) {
+        case 87: //w
+          keys.forward = false;
+          break;
 
-      case 83: //s
-        keys.backward = false;
-        break;
+        case 83: //s
+          keys.backward = false;
+          break;
 
-      case 65: //a
-        keys.left = false;
-        break;
+        case 65: //a
+          keys.left = false;
+          break;
 
-      case 68: //d
-        keys.right = false;
-        break;
+        case 68: //d
+          keys.right = false;
+          break;
 
-      case 32: //jump
-        keys.jump = false;
-        break;
+        case 32: //jump
+          keys.jump = false;
+          break;
 
-      case 16: //shift
-        keys.shift = false;
-        break;
+        case 16: //shift
+          keys.shift = false;
+          break;
 
-      case 69: //e
-        keys.action = false;
-        break;
-      case 81: //q
-        keys.sign = false;
-        break;
+        case 69: //e
+          keys.action = false;
+          console.log(keys.isSwordInHand, keys.currentSign);
+          break;
+        case 81: //q
+          keys.sign = false;
+          hideQuickMenu();
+          break;
+      }
     }
   };
-
+  //TODO:trzeba się zastanowić czy nie zrobić tego wybierania na zasadzie, że wybierana jest to co jest zaznaczone w momencie puszczenia q
   //!--Keyboard
   window.addEventListener('keydown', handleKeyDown, true);
   window.addEventListener('keyup', handleKeyUp);
