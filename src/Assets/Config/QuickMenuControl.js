@@ -6,8 +6,10 @@ const changeCurrentSign = (e) => {
   console.log(e.target.className);
   if (e.target.className == 'sword') {
     params.keys.isSwordInHand = true;
+    params.keys.toggleSword();
   } else if (e.target.className == 'fist') {
     params.keys.isSwordInHand = false;
+    params.keys.toggleSword();
   } else {
     params.keys.currentSign = e.target.className;
   }

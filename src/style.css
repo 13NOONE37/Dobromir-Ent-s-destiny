@@ -102,7 +102,7 @@ body {
   animation: igniAnimation var(--sign-time) var(--sign-transition);
 }
 .igni::before {
-  height: 200% !important;
+  height: 220% !important;
 }
 .axii {
   transform: translateY(-25px) translateX(-25px);
@@ -142,7 +142,8 @@ body {
   transform: translateY(25px) translateX(-25px);
 }
 .sword::before {
-  transform: rotate(-125deg);
+  height: 200% !important;
+  transform: rotate(-130deg);
 }
 .fist {
   animation: fistAnimation var(--sign-time) var(--sign-transition);
@@ -150,7 +151,9 @@ body {
   transform: translateY(25px) translateX(25px);
 }
 .fist::before {
-  transform: rotate(125deg);
+  height: 200% !important;
+
+  transform: rotate(130deg);
 }
 
 @keyframes igniAnimation {

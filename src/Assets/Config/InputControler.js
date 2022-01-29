@@ -228,6 +228,11 @@ const handleControler = () => {
 let activeAction, previousAction;
 
 const currentObject = { object: undefined, type: undefined };
+
+const toggleSword = () =>
+  (currentObject.object.children[0].children[0].children[0].children[0].children[2].children[0].children[0].children[2].children[1].visible =
+    keys.isSwordInHand);
+
 const keys = {
   mouse: { x: 0, y: 0 },
   mousePrevious: { x: 0, y: 0 },
@@ -248,6 +253,7 @@ const keys = {
   sign: false,
   currentSign: 'igni',
   isSwordInHand: true,
+  toggleSword: toggleSword,
   isBlocking: false,
   speed: 1.7,
 };
@@ -369,12 +375,10 @@ const initInputControler = () => {
     keys.mouse.y = e.clientY;
     //
   });
+  window.addEventListener('contextmenu', (e) => e.preventDefault());
 };
 const initControler = (gui) => {
-  gui.add(keys, 'isSwordInHand').onChange((e) => {
-    currentObject.object.children[0].children[0].children[0].children[0].children[2].children[0].children[0].children[2].children[1].visible =
-      e;
-  });
+  gui.add(keys, 'isSwordInHand').onChange((e) => {});
   initInputControler();
   return [currentObject, handleControler];
 };
