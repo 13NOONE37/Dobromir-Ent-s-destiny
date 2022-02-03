@@ -1,6 +1,8 @@
 import getAnimationOrder from '../Utils/getAnimationOrder';
 import { showQuickMenu, hideQuickMenu } from './QuickMenuControl';
 
+const canvas = document.querySelector('canvas.webgl');
+
 const fadeToAction = (animation, duration) => {
   previousAction = activeAction;
   activeAction = animation;
@@ -292,6 +294,7 @@ const initInputControler = () => {
         case 81: //q
           keys.sign = true;
           showQuickMenu(keys);
+          document.exitPointerLock();
           break;
       }
     }
@@ -330,18 +333,20 @@ const initInputControler = () => {
         case 81: //q
           keys.sign = false;
           hideQuickMenu();
+          canvas.requestPointerLock();
           break;
       }
     }
   };
   //TODO:trzeba się zastanowić czy nie zrobić tego wybierania na zasadzie, że wybierana jest to co jest zaznaczone w momencie puszczenia q
   //!--Keyboard
-  window.addEventListener('keydown', handleKeyDown, true);
+  window.addEventListener('keydown', handleKeyDown);
   window.addEventListener('keyup', handleKeyUp);
 
   //!--Mouse
   window.addEventListener('mousedown', (e) => {
     e.preventDefault();
+    canvas.requestPointerLock();
     switch (e.button) {
       case 0: //lmb
         keys.leftMouse = true;
@@ -368,18 +373,50 @@ const initInputControler = () => {
         break;
     }
   });
-  window.addEventListener('mousemove', (e) => {
-    keys.mousePrevious.x = keys.mouse.x;
-    keys.mousePrevious.y = keys.mouse.y;
-    keys.mouse.x = e.clientX;
-    keys.mouse.y = e.clientY;
-    //
-  });
   window.addEventListener('contextmenu', (e) => e.preventDefault());
+
+  //pointer lock
+  canvas.requestPointerLock =
+    canvas.requestPointerLock || canvas.mozRequestPointerLock;
+  document.exitPointerLock =
+    document.exitPointerLock || document.mozExitPointerLock;
+
+  const RADIUS = 1;
+  const lockChangeAlert = () => {
+    if (
+      document.pointerLockElement === canvas ||
+      document.mozPointerLockElement === canvas
+    ) {
+      console.log('The pointer lock status is now locked');
+      document.addEventListener('mousemove', updatePosition, false);
+    } else {
+      console.log('The pointer lock status is now unlocked');
+      document.removeEventListener('mousemove', updatePosition, false);
+    }
+  };
+  const updatePosition = (e) => {
+    keys.mouse.x += e.movementX;
+    keys.mouse.y += e.movementY;
+    if (keys.mouse.x > canvas.width + RADIUS) {
+      keys.mouse.x = -RADIUS;
+    }
+    if (keys.mouse.y > canvas.height + RADIUS) {
+      keys.mouse.y = -RADIUS;
+    }
+    if (keys.mouse.x < -RADIUS) {
+      keys.mouse.x = canvas.width + RADIUS;
+    }
+    if (keys.mouse.y < -RADIUS) {
+      keys.mouse.y = canvas.height + RADIUS;
+    }
+  };
+  document.addEventListener('pointerlockchange', lockChangeAlert, false);
+  document.addEventListener('mozpointerlockchange', lockChangeAlert, false);
 };
 const initControler = (gui) => {
   gui.add(keys, 'isSwordInHand').onChange((e) => {});
   initInputControler();
+
   return [currentObject, handleControler];
 };
 
