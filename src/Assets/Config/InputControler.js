@@ -33,7 +33,8 @@ const handleControler = () => {
       !keys.backward &&
       !keys.left &&
       !keys.right &&
-      !keys.rightMouse
+      !keys.rightMouse &&
+      !keys.leftMouse
     ) {
       if (activeAction === undefined) {
         activeAction =
@@ -130,56 +131,35 @@ const handleControler = () => {
 
     //leftMouse
     if (keys.leftMouse) {
-      if (keys.isSwordInHand) {
-        if (
-          activeAction !==
-          currentObject.object.animations[getAnimationOrder('SwordAttack1')]
-        ) {
-          // currentObject.object.animations[
-          //   getAnimationOrder('SwordAttack1')
-          // ].play();
+      const attackActionName = keys.isSwordInHand ? 'SwordAttack1' : 'RightJab';
 
-          fadeToAction(
-            currentObject.object.animations[getAnimationOrder('SwordAttack1')],
-            0.2,
-          );
-        }
-      } else {
-        if (
-          activeAction !==
-          currentObject.object.animations[getAnimationOrder('LeftJab')]
-        ) {
-          fadeToAction(
-            currentObject.object.animations[getAnimationOrder('LeftJab')],
-            0.2,
-          );
-        }
-      }
+      activeAction !==
+        currentObject.object.animations[getAnimationOrder(attackActionName)] &&
+        fadeToAction(
+          currentObject.object.animations[getAnimationOrder(attackActionName)],
+          0.2,
+        );
     }
-
+    if (!keys.leftMouse && keys.rightMouse) {
+      activeAction !==
+        currentObject.object.animations[getAnimationOrder('SwordGuard')] &&
+        fadeToAction(
+          currentObject.object.animations[getAnimationOrder('SwordGuard')],
+          0.2,
+        );
+    }
     if (keys.rightMouse && !keys.isBlocking) {
-      if (keys.isSwordInHand) {
-        if (
-          activeAction !==
-          currentObject.object.animations[getAnimationOrder('SwordGuard')]
-        ) {
-          keys.isBlocking = true;
-          fadeToAction(
-            currentObject.object.animations[getAnimationOrder('SwordGuard')],
-            0.1,
-          );
-        }
-      } else {
-        if (
-          activeAction !==
-          currentObject.object.animations[getAnimationOrder('Guard')]
-        ) {
-          keys.isBlocking = true;
-          fadeToAction(
-            currentObject.object.animations[getAnimationOrder('Guard')],
-            0.1,
-          );
-        }
+      const blockActionName = keys.isSwordInHand ? 'SwordGuard' : 'Guard';
+
+      if (
+        activeAction !==
+        currentObject.object.animations[getAnimationOrder(blockActionName)]
+      ) {
+        keys.isBlocking = true;
+        fadeToAction(
+          currentObject.object.animations[getAnimationOrder(blockActionName)],
+          0.1,
+        );
       }
     }
   }

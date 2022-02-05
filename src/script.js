@@ -34,10 +34,11 @@ const MainScene = () => {
   const clock = new THREE.Clock();
   let currentTime = 0;
 
-  const spot = new THREE.SpotLight(0xffffff, 50, 50, Math.PI, 100);
-  spot.rotation.x = Math.PI;
-  spot.position.set(0, 8, -20);
-  scene.add(spot);
+  //house light example
+  // const spot = new THREE.SpotLight(0xffffff, 50, 50, Math.PI, 100);
+  // spot.rotation.x = Math.PI;
+  // spot.position.set(0, 8, -20);
+  // scene.add(spot);
   //Camera
   const cameraDebug = {
     lookX: 0,
@@ -303,13 +304,12 @@ const MainScene = () => {
     const clampTypes = [
       'Guard',
       'SwordGuard',
-      // 'LeftJab',
-      // 'RightJab',
-      // 'SwordAttack1',
+      'LeftJab',
+      'RightJab',
+      'SwordAttack1',
     ];
     for (const clip of model.animations) {
       const action = mixer.clipAction(clip);
-      // action.clampWhenFinished = true;
       if (clampTypes.includes(clip.name)) {
         action.setLoop(THREE.LoopOnce);
         action.clampWhenFinished = true;
